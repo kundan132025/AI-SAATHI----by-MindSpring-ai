@@ -1,0 +1,48 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+*.env
+
+# Logs
+logs
+*.log
+logs/*.log
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Build output
+dist/
+build/
+
+# Coverage
+coverage/
+
+# Local test files
+gemini-test/
+key.json
+*.key.json
+
+# Runtime data
+*.pid
+*.seed
+*.pid.lock
+
+# Cache
+.cache/
+.next/
+out/
