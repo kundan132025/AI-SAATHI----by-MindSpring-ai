@@ -7,6 +7,7 @@ yarn-error.log*
 # Environment variables
 .env
 *.env
+.env.*
 
 # Logs
 logs
@@ -34,6 +35,7 @@ coverage/
 
 # Local test files
 gemini-test/
+**/gemini-test/
 key.json
 *.key.json
 
