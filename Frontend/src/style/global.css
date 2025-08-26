@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reset default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Base responsive viewport settings */
+html, 
+body,
+#root {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Responsive font sizing */
+html {
+  font-size: 16px;
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+  @media (max-width: 640px) {
+    font-size: 12px;
+  }
+}
+
+/* Page layout styles */
+.page-root {
+  @apply min-h-screen w-screen overflow-x-hidden bg-gradient-to-r from-pink-100 via-blue-100 to-pink-100;
+}
+
+.hero {
+  @apply w-full min-h-[calc(100vh-4rem)] relative flex items-center justify-center 
+         px-4 sm:px-6 lg:px-8;
+}
+
+.hero-content {
+  @apply w-full max-w-7xl mx-auto text-center 
+         px-4 sm:px-6 lg:px-8 
+         space-y-4 sm:space-y-6 lg:space-y-8;
+}
+
+/* Typography */
+.hero-content h3 {
+  @apply text-2xl sm:text-3xl lg:text-4xl 
+         font-extrabold text-gray-900 
+         tracking-tight leading-tight;
+}
+
+.hero-content h1 {
+  @apply text-3xl sm:text-5xl lg:text-6xl 
+         font-extrabold text-gray-900 
+         tracking-tight leading-tight 
+         max-w-3xl mx-auto;
+}
+
+/* Button styles */
+.chat-btn {
+  /* @apply px-6 sm:px-8 py-2 sm:py-3
+         text-base sm:text-lg
+         bg-blue-400 text-white 
+         rounded-lg font-semibold
+         hover:bg-blue-500 
+         transition-all duration-300 
+         transform hover:-translate-y-1
+         focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2
+         active:bg-blue-600; */
+
+         /* ...existing code... */
+  @apply px-8 py-3 
+    bg-blue-500 
+    hover:bg-blue-600 
+    text-white 
+    rounded-lg 
+    font-semibold 
+    text-lg
+    transition-all 
+    duration-300 
+    transform 
+    hover:-translate-y-1
+    shadow-lg
+    hover:shadow-xl;
+
+}
+
+/* Media query adjustments */
+@media (max-width: 640px) {
+  .hero {
+    padding: 1rem;
+  }
+  
+  .hero-content {
+    padding: 0;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .hero {
+    min-height: 100vh;
+  }
+  
+  .hero-content {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) {
+  .chat-btn {
+    @apply hover:transform-none;
+    @apply hover:bg-blue-400;
+  }
+}
+
+/* Floating Bubbles Animation */
+.bokeh {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bubble {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: float 6s ease-in-out infinite;
+}
+
+.bubble:nth-child(odd) {
+  background: rgba(255, 192, 203, 0.5);
+  width: 120px;
+  height: 120px;
+}
+
+.bubble:nth-child(even) {
+  background: rgba(173, 216, 230, 0.5);
+  width: 80px;
+  height: 80px;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-100px) translateX(50px);
+  }
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+}
+
+/* Individual bubble positions */
+.bubble-1 { top: 20%; }
+.bubble-2 { top: 40%; }
+.bubble-3 { top: 60%; }
+.bubble-4 { top: 30%; }
+.bubble-5 { top: 70%; }
+.bubble-6 { top: 45%; }
+.bubble-7 { top: 25%; }
+.bubble-8 { top: 55%; }

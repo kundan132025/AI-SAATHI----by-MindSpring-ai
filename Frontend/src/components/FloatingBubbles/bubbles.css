@@ -1,0 +1,91 @@
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  padding-top: 64px; /* keeps hero below navbar */
+  background: linear-gradient(180deg, #dbeafe 0%, #fbe8f0 100%);
+}
+
+.hero-content {
+  z-index: 20; text-align: center;
+  padding: 28px;
+}
+.hero-content h3 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 6px;
+  color: #0f1724;
+  font-weight: 800;
+}
+.hero-content h1 {
+  margin: 14px 0 22px;
+  font-size: 48px;
+  font-weight: 900;
+  color: #091026;
+}
+.chat-btn {
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 700;
+  background: linear-gradient(180deg, #8fb5ff, #5e95ff);
+  color: white;
+  cursor: pointer;
+}
+
+/* Bokeh bubbles */
+.bokeh { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(30px);
+  opacity: 0.95;
+  mix-blend-mode: screen;
+}
+
+.b1 {
+  width: 520px; height: 520px;
+  left: 10%; bottom: -120px;
+  background: radial-gradient(circle at 40% 30%, rgba(255,92,203,0.95), rgba(255,92,203,0.45) 40%, transparent 65%);
+  animation: float 12s ease-in-out infinite;
+}
+
+.b2 {
+  width: 420px; height: 420px;
+  right: 6%; top: 8%;
+  background: radial-gradient(circle, rgba(255,125,202,0.95), rgba(255,125,202,0.5) 45%, transparent 70%);
+  animation: float 14s ease-in-out infinite;
+}
+
+.b3 {
+  width: 200px; height: 200px;
+  left: 4%; top: 4%;
+  background: radial-gradient(circle, rgba(255,125,202,0.9), rgba(255,125,202,0.4) 40%, transparent 65%);
+  animation: float 10s ease-in-out infinite;
+}
+
+.b4 {
+  width: 80px; height: 80px;
+  left: 18%; top: 30%;
+  background: radial-gradient(circle, rgba(255,125,202,0.8), transparent 60%);
+  animation: float 11s ease-in-out infinite;
+}
+
+.b5 {
+  width: 260px; height: 260px;
+  right: 42%; bottom: 6%;
+  background: radial-gradient(circle, rgba(255,125,202,0.95), rgba(255,125,202,0.45) 35%, transparent 70%);
+  animation: float 13s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%   { transform: translateY(0) }
+  50%  { transform: translateY(-22px) translateX(6px) }
+  100% { transform: translateY(0) }
+}
+.bubble:hover {
+  filter: blur(20px);
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
