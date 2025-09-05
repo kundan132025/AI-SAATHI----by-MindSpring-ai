@@ -24,7 +24,7 @@ import "./navbar.css";
 
 export default function Navbar() {
   return (
-    <header className="navbar">
+    <header className="navbar fixed top-0 left-0 w-full z-50">
       <div className="brand">AI SAATHI</div>
       <div className="nav-actions">
         <button className="btn dark">Log In</button>

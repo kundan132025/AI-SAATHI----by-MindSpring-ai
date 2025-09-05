@@ -1,8 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar/Navbar";
 import FloatingBubbles from "../components/FloatingBubbles/FloatingBubbles";
 
 export default function Home() {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-r from-pink-100 via-blue-100 to-pink-100">
       <Navbar />
@@ -16,7 +18,9 @@ export default function Home() {
             <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 mb-8">
               YOUTH MENTAL WELLNESS
             </h1>
-            <button className="chat-btn">CHAT</button>
+            <button className="chat-btn"
+              onClick={() => navigate("/chat")}
+            >CHAT</button>
           </div>
         </div>
       </main>

@@ -1,3 +1,58 @@
+/* Toggle button hidden on desktop, shown on mobile */
+.navbar-toggle-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  justify-content: center;
+  gap: 16px;
+}
+
+@media (max-width: 700px) {
+  .navbar-toggle-btn {
+    display: block;
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    z-index: 1001;
+  }
+  .navbar-menu {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    background: rgba(255,255,255,0.97);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border-radius: 0 0 12px 12px;
+    padding: 10px 0 8px 0;
+    z-index: 1000;
+  }
+  .navbar-menu.open {
+    display: flex;
+  }
+  .navbar .center {
+    font-size: 1rem;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+  .navbar .nav-actions {
+    flex-direction: row;
+    justify-content: center;
+    gap: 6px;
+  }
+}
 /* Reset */
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; padding: 0; }
@@ -6,17 +61,57 @@ body { font-family: "Poppins", sans-serif; }
 /* Navbar */
 .navbar {
   position: fixed;
-  top: 30px; left: 40px; right: 40px;
-  height: 75px;
-  display: flex; align-items: center; justify-content: space-between;
+  top: 0; left: 0; right: 0;
+  width: 100vw;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   padding: 10px 28px;
-  z-index: 40;
-  background: rgba(255,255,255,0.65);
+  z-index: 999;
+  background: rgba(255,255,255,0.85);
   backdrop-filter: blur(6px);
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  border-bottom-right-radius: 12px;
-  border-bottom-left-radius: 12px;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  gap: 10px;
+}
+
+.navbar .center {
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #22223b;
+}
+
+@media (max-width: 700px) {
+  .navbar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 8px;
+    min-height: unset;
+    gap: 6px;
+  }
+  .navbar .brand {
+    font-size: 1rem;
+    padding: 8px 12px;
+    margin-bottom: 2px;
+  }
+  .navbar .center {
+    font-size: 1rem;
+    margin-bottom: 2px;
+  }
+  .navbar .nav-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .navbar .btn {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+  }
 }
 
 .brand {
