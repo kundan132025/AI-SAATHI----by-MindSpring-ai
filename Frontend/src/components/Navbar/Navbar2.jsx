@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./navbar.css";
+import { Menu } from "lucide-react";
 
 export default function Navbar2() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -15,6 +16,12 @@ export default function Navbar2() {
           <button className="btn dark">Log In</button>
           <button className="btn light">Sign Up</button>
         </div>
+          <button
+              onClick={() => setSidebarOpen((prev) => !prev)}
+              className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+          >
+          <Menu size={20} />
+          </button>
       </div>
     </header>
   );

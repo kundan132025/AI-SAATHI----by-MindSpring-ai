@@ -3,9 +3,7 @@ import MessageBubble from "../components/MessageBubble/MessageBubble";
 import TypingIndicator from "../components/TypingIndicator";
 import { Menu, X } from "lucide-react"; // icons
 import { useEffect, useRef } from "react";
-import Navbar from "../components/Navbar/Navbar";
 import Navbar2 from "../components/Navbar/Navbar2";
-
 
 function Chat() {
   const [messages, setMessages] = useState([]);
@@ -19,6 +17,24 @@ function Chat() {
   }, [messages]);
 
 
+  const playVoice = async (text) => {
+  try {
+    const res = await fetch("http://localhost:5000/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.play();
+  } catch (err) {
+    console.error("TTS Play Error:", err);
+  }
+};
+
+
   const handleSend = async () => {
   if (!input.trim()) return;
 
@@ -27,6 +43,8 @@ function Chat() {
   const userMessage = input;  // save before clearing
   setInput("");
   setLoading(true);
+
+
 
   try {
     const response = await fetch("http://localhost:5000/api/chat", {
@@ -42,6 +60,7 @@ function Chat() {
 
     if (data.reply) {
       setMessages((prev) => [...prev, { sender: "ai", text: data.reply }]);
+      playVoice(data.reply);
     } else {
       setMessages((prev) => [...prev, { sender: "ai", text: "⚠️ No reply from AI." }]);
     }
@@ -53,11 +72,56 @@ function Chat() {
   }
 };
 
+  const [recording, setRecording] = useState(false);
+  const mediaRecorderRef = useRef(null); // <-- add this
+  let audioChunks = useRef([]);          // <-- add this
+
+  const toggleRecording = async () => {
+    if (!recording) {
+      // Start recording
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      audioChunks.current = [];
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunks.current.push(event.data);
+        }
+      };
+
+      mediaRecorderRef.current.onstop = async () => {
+        const blob = new Blob(audioChunks.current, { type: "audio/webm" });
+        audioChunks.current = [];
+
+        const formData = new FormData();
+        formData.append("audio", blob, "speech.webm");
+
+        const response = await fetch("http://localhost:5000/api/speech", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await response.json();
+        if (data.transcript) {
+          setInput(data.transcript);
+          handleSend(); // send like text
+        }
+      };
+
+      mediaRecorderRef.current.start();
+      setRecording(true);
+    } else {
+      // Stop recording
+      mediaRecorderRef.current.stop();
+      setRecording(false);
+    }
+  };
+
 
   return (
+    
     <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-r from-pink-100 via-blue-100 to-pink-100">
-          <Navbar2  />
-    <div className="flex h-screen w-screen bg-white">
+      <Navbar2  />    
+    <div className="flex pt-20 w-screen bg-white min-h-screen">
       {/* Sidebar */}
       {sidebarOpen && (
         <div className="w-64 bg-gray-900 text-white flex flex-col p-4">
@@ -81,24 +145,11 @@ function Chat() {
       )}
 
       {/* Main chat area */}
-      <div className="flex flex-col flex-1 h-screen">
-        {/* Header */}
-        <div className="sticky top-0 z-20 p-4 bg-gray-100 shadow flex justify-between items-center">
-          <button
-            onClick={() => setSidebarOpen((prev) => !prev)}
-            className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300"
-          >
-            <Menu size={20} />
-          </button>
-          <h2 className="text-lg font-semibold">Chat Anonymous</h2>
-          <button className="px-4 py-2 bg-linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,250,250,0.85)) text-black rounded-full border border-4 border-[rgba(0,0,0,0.7)] shadow-lg">
-            AI SAATHI
-          </button>
-        </div>
-
+      <div className="flex flex-col flex-1">
+        
         {/* Chat container */}
-        <div className="flex-1 flex justify-center bg-[#e6e6fa]">
-          <div className="w-full max-w-3xl flex flex-col">
+        <div className="flex-1 flex flex-col justify-end items-center bg-[#e6e6fa]">
+          <div className="w-full max-w-3xl flex flex-col flex-1">
             {/* Messages */}
             <div className="flex-1 p-4 overflow-y-auto">
               {messages.map((msg, i) => (
@@ -111,7 +162,7 @@ function Chat() {
               <div ref={messagesEndRef} />
           </div>
             {/* Input Bar */}
-        <div className="p-4 border-t bg-gray-100 rounded-full mb-10 flex items-center gap-2 shadow-lg sticky bottom-6">
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-3xl z-50 p-4 border-t bg-gray-100 rounded-full flex items-center gap-2 shadow-lg">
             <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -125,6 +176,7 @@ function Chat() {
                 rows={1}
                 className="flex-1 resize-none px-4 py-2 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-400 overflow-hidden"
                 style={{ minHeight: "40px", maxHeight: "150px" }}
+
             />
 
             <button
@@ -133,6 +185,13 @@ function Chat() {
             >
                 Send
             </button>
+          <button
+              onClick={toggleRecording}
+              className={`px-4 py-2 ${recording ? "bg-red-500" : "bg-blue-500"} text-white rounded-2xl hover:bg-blue-600`}
+            >
+            {recording ? "⏹️ Stop" : "🎤 Speak"}
+          </button>
+
         </div>
 
         <button
