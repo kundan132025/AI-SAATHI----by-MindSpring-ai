@@ -1,9 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // <-- Add this import
 import "./navbar.css";
 import { Menu } from "lucide-react";
 
 export default function Navbar2() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate(); // <-- Add this line
+
   return (
     <header className="navbar fixed top-0 left-0 w-full z-50">
       <div className="brand">AI SAATHI</div>
@@ -13,15 +16,15 @@ export default function Navbar2() {
       <div className={`navbar-menu${menuOpen ? " open" : ""}`}>
         <div className="center text-2xl">Chat Anonymous</div>
         <div className="nav-actions">
-          <button className="btn dark">Log In</button>
+          <button className="btn dark" onClick={() => navigate("/login")}>Log In</button>
           <button className="btn light">Sign Up</button>
         </div>
-          <button
-              onClick={() => setSidebarOpen((prev) => !prev)}
-              className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300"
-          >
+        <button
+          onClick={() => setSidebarOpen((prev) => !prev)}
+          className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+        >
           <Menu size={20} />
-          </button>
+        </button>
       </div>
     </header>
   );
