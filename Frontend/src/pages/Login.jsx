@@ -1,14 +1,9 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "../utils/axios";
 import { AuthContext } from "../context/AuthContext";
-<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
-=======
 import { FaGoogle, FaApple, FaWindows } from "react-icons/fa";
 import LeftBox from "../components/LeftBox.jsx";
-
-
->>>>>>> 0c8029bd46c74c89c922e1f81ce32960251f92d4
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -38,15 +33,12 @@ export default function Login() {
       // handle error
     }
   };
- 
- 
-   
+
   return (
     <div className="flex items-center justify-center min-h-screen w-screen bg-gradient-to-r from-purple-200 to-blue-200">
       {/* Login Card */}
       <div className="flex w-[700px] h-[400px] rounded-2xl shadow-xl overflow-hidden mx-auto">
         {/* Left Side */}
-
         <LeftBox />
 
         {/* Right Side */}
