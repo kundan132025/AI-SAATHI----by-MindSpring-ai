@@ -1,24 +1,34 @@
 import { useState, useContext, useEffect } from "react";
 import axios from "../utils/axios";
 import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
     if (token) {
       login(token);
-      window.history.replaceState({}, document.title, "/dashboard"); 
+      window.history.replaceState({}, document.title, "/chat");
+      navigate("/chat");
     }
-  }, [login]);
+    // eslint-disable-next-line
+  }, [login, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await axios.post("/auth/login", form);
-    login(res.data.token);
+    try {
+      const res = await axios.post("/auth/login", form);
+      console.log("TOKEN:", res.data.token);
+      login(res.data.token);
+      navigate("/chat"); // Redirect to chat after login
+    } catch (err) {
+      // handle error
+    }
   };
 
   return (

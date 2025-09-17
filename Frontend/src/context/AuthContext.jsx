@@ -1,28 +1,31 @@
-import { createContext, useState, useEffect } from "react";
-import axios from "../utils/axios";
+import { createContext, useState, useEffect, useContext } from "react";
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  // const navigate = useNavigate();
 
+  // Restore user from localStorage on mount
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      axios.get("/auth/me")
-        .then((res) => setUser(res.data))
-        .catch(() => setUser(null));
-    }
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
   const login = (token) => {
-    localStorage.setItem("token", token);
-    axios.get("/auth/me").then((res) => setUser(res.data));
+    const decoded = jwtDecode(token);
+    console.log("DECODED:", decoded);
+    const userObj = { ...decoded, token };
+    setUser(userObj);
+    localStorage.setItem("user", JSON.stringify(userObj));
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
     setUser(null);
+    localStorage.removeItem("user");
+    // navigate("/login");
   };
 
   return (
@@ -30,4 +33,8 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  return useContext(AuthContext);
 };

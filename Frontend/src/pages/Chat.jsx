@@ -1,17 +1,47 @@
-import { useState } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import MessageBubble from "../components/MessageBubble/MessageBubble";
 import TypingIndicator from "../components/TypingIndicator";
-import { Menu, X } from "lucide-react"; // icons
-import { useEffect, useRef } from "react";
+import { Menu, X } from "lucide-react";
 import Navbar2 from "../components/Navbar/Navbar2";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 function Chat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [previousChats, setPreviousChats] = useState([]);
   const messagesEndRef = useRef(null);
+  const { user, login, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  // Fetch previous chats for the user (simulate or fetch from backend)
+  useEffect(() => {
+    async function fetchChats() {
+      if (!user) return;
+      // Replace this with your real API endpoint for chat history
+      const res = await fetch(`http://localhost:5000/api/chat/history/${user.id || user._id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPreviousChats(data.chats || []);
+      }
+    }
+    fetchChats();
+  }, [user]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      login(token);
+      // Remove token from URL for cleanliness
+      window.history.replaceState({}, document.title, "/chat");
+      // Optionally, navigate to /chat to refresh the component
+      navigate("/chat", { replace: true });
+    }
+  }, [login, navigate]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -50,7 +80,19 @@ function Chat() {
     const response = await fetch("http://localhost:5000/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userMessage }),
+      body: JSON.stringify({ 
+        userId: user?.id || user?._id, 
+        message: userMessage 
+      }),
+    });
+
+    const response_data = await fetch("http://localhost:5000/api/chat/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        userId:  user?.id || user?._id, 
+        message: userMessage 
+      }),
     });
 
     console.log("Response status:", response.status);
@@ -117,51 +159,90 @@ function Chat() {
   };
 
 
+  const handleLogout = () => {
+    logout();
+    navigate("/"); // Redirect to home or login page
+  };
+
   return (
-    
     <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-r from-pink-100 via-blue-100 to-pink-100">
-      <Navbar2  />    
-    <div className="flex pt-20 w-screen bg-white min-h-screen">
-      {/* Sidebar */}
-      {sidebarOpen && (
-        <div className="w-64 bg-gray-900 text-white flex flex-col p-4">
-          <h2 className="text-xl font-bold mb-4">History</h2>
-          <div className="flex-1 overflow-y-auto space-y-2">
-            {/* Example chat history */}
-            <button className="w-full text-left px-3 py-2 rounded bg-gray-800 hover:bg-gray-700">
-              Previous Chat 1
+      <Navbar2 onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
+      <div className="flex w-screen bg-white min-h-screen">
+        {/* Sidebar */}
+        {sidebarOpen && (
+          <div className="fixed top-0 left-0 h-full w-64 bg-gray-900 text-white flex flex-col p-4 z-50 shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xl font-bold">Menu</span>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="p-2 bg-gray-900 rounded hover:bg-gray-700 border-none focus:outline-none"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            {user && (
+            <button
+              onClick={handleLogout}
+              className="w-full mb-4 px-3 py-2 rounded bg-red-500 hover:bg-red-600 text-white font-semibold border-none focus:outline-none"
+            >
+              Logout
             </button>
-            <button className="w-full text-left px-3 py-2 rounded bg-gray-800 hover:bg-gray-700">
-              Previous Chat 2
-            </button>
+            )}
+            <h2 className="text-lg font-semibold mb-2">Previous Chats</h2>
+            <div className="flex-1 overflow-y-auto space-y-2">
+              {previousChats.length === 0 ? (
+                <div className="text-gray-400">No previous chats yet.</div>
+              ) : (
+                previousChats.map((chat, idx) => (
+                  <button
+                    key={chat._id || idx}
+                    className="w-full text-left px-3 py-2 rounded bg-gray-800 hover:bg-gray-700"
+                  >
+                    {chat.title || `Chat ${idx + 1}`}
+                  </button>
+                ))
+              )}
+            </div>
+            {/* New Chat and Go to Dashboard at the bottom */}
+            <div className="flex flex-col gap-2 mt-4">
+              <button
+                onClick={() => {
+                  setMessages([]);
+                  fetch("http://localhost:5000/api/chat/reset", { method: "POST" });
+                }}
+                className="w-full px-3 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-900 font-semibold border-none focus:outline-none"
+              >
+                New Chat
+              </button>
+              <div className="mt-auto">
+                <Link to="/dashboard">
+                  <button className="w-full px-3 py-2 rounded bg-blue-500 hover:bg-blue-600 text-white font-semibold border-none focus:outline-none">
+                    Go to Dashboard
+                  </button>
+                </Link>
+              </div>
+            </div>
           </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="mt-4 flex items-center justify-center px-3 py-2 bg-gray-700 rounded hover:bg-gray-600"
-          >
-            <X size={18} className="mr-2" /> Close
-          </button>
-        </div>
-      )}
+        )}
 
-      {/* Main chat area */}
-      <div className="flex flex-col flex-1">
-        
-        {/* Chat container */}
-        <div className="flex-1 flex flex-col justify-end items-center bg-[#e6e6fa]">
-          <div className="w-full max-w-3xl flex flex-col flex-1">
-            {/* Messages */}
-            <div className="flex-1 p-4 overflow-y-auto">
-              {messages.map((msg, i) => (
-                <MessageBubble key={i} sender={msg.sender} text={msg.text} />
-              ))}
+        {/* Main chat area */}
+        <div className="flex flex-col flex-1">
+          {/* Sidebar open button */}
+          {/* Chat container */}
+          <div className="flex-1 flex flex-col justify-end items-center bg-[#e6e6fa] pt-20">
+            <div className="w-full max-w-3xl flex flex-col flex-1">
+              {/* Messages */}
+              <div className="flex-1 p-4 overflow-y-auto">
+                {messages.map((msg, i) => (
+                  <MessageBubble key={i} sender={msg.sender} text={msg.text} />
+                ))}
 
-              {loading && <TypingIndicator />}
+                {loading && <TypingIndicator />}
 
-               {/* Dummy div for auto-scroll */}
-              <div ref={messagesEndRef} />
-          </div>
-            {/* Input Bar */}
+                 {/* Dummy div for auto-scroll */}
+                <div ref={messagesEndRef} />
+            </div>
+              {/* Input Bar */}
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-3xl z-50 p-4 border-t bg-gray-100 rounded-full flex items-center gap-2 shadow-lg">
             <textarea
                 value={input}
@@ -193,18 +274,6 @@ function Chat() {
           </button>
 
         </div>
-
-        <button
-            onClick={() => {
-            setMessages([]);
-            fetch("http://localhost:5000/api/chat/reset", { method: "POST" }); 
-        }}
-        className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400"
-        >
-          New Chat
-        </button>
-
-
             </div>
           </div>
         </div>

@@ -35,3 +35,14 @@ function pickNovelIdea(session, context, maxAttempts=50){
   // final fallback: random
   return pool[Math.floor(Math.random()*pool.length)];
 }
+
+export function getAIResponse(message, session = {}, context = "") {
+  // Use your existing pickNovelIdea logic
+  const reply = pickNovelIdea(session, context || message);
+  // You can enhance emotion/intent detection as needed
+  return {
+    emotion: "neutral",
+    intent: "vent",
+    reply,
+  };
+}
