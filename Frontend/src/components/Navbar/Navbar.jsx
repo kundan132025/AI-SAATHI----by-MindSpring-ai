@@ -7,6 +7,15 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Check if user is logged in (adjust as per your auth logic)
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setMenuOpen(false);
+    navigate("/login");
+  };
+
   return (
     <header className="w-full h-20 z-50 flex items-center justify-between px-4 md:px-8 py-3 bg-white shadow-sm">
       {/* Brand */}
@@ -36,18 +45,29 @@ export default function Navbar() {
         >
           Community
         </Link>
-        <button
-          className="px-6 py-2 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition shadow ml-4"
-          onClick={() => navigate("/login")}
-        >
-          Log In
-        </button>
-        <button
-          className="px-6 py-2 rounded-lg bg-blue-400 text-white font-semibold hover:bg-blue-500 transition shadow"
-          onClick={() => navigate("/register")}
-        >
-          Sign Up
-        </button>
+        {user ? (
+          <button
+            className="px-6 py-2 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition shadow ml-4"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        ) : (
+          <>
+            <button
+              className="px-6 py-2 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition shadow ml-4"
+              onClick={() => navigate("/login")}
+            >
+              Log In
+            </button>
+            <button
+              className="px-6 py-2 rounded-lg bg-blue-400 text-white font-semibold hover:bg-blue-500 transition shadow"
+              onClick={() => navigate("/register")}
+            >
+              Sign Up
+            </button>
+          </>
+        )}
       </nav>
       {/* Mobile Toggle */}
       <button
@@ -85,24 +105,38 @@ export default function Navbar() {
           >
             Community
           </Link>
-          <button
-            className="w-4/5 my-2 px-6 py-2 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition shadow"
-            onClick={() => {
-              setMenuOpen(false);
-              navigate("/login");
-            }}
-          >
-            Log In
-          </button>
-          <button
-            className="w-4/5 px-6 py-2 rounded-lg bg-blue-400 text-white font-semibold hover:bg-blue-500 transition shadow"
-            onClick={() => {
-              setMenuOpen(false);
-              navigate("/register");
-            }}
-          >
-            Sign Up
-          </button>
+          {user ? (
+            <button
+              className="w-4/5 my-2 px-6 py-2 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition shadow"
+              onClick={() => {
+                setMenuOpen(false);
+                handleLogout();
+              }}
+            >
+              Logout
+            </button>
+          ) : (
+            <>
+              <button
+                className="w-4/5 my-2 px-6 py-2 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition shadow"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/login");
+                }}
+              >
+                Log In
+              </button>
+              <button
+                className="w-4/5 px-6 py-2 rounded-lg bg-blue-400 text-white font-semibold hover:bg-blue-500 transition shadow"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/register");
+                }}
+              >
+                Sign Up
+              </button>
+            </>
+          )}
         </div>
       )}
     </header>

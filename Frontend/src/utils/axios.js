@@ -1,5 +1,5 @@
 import axios from "axios";
 
 export default axios.create({
-  baseURL: "http://localhost:5001", // Use your backend's port
+  baseURL: "http://localhost:5000", // Use your backend's port
 });

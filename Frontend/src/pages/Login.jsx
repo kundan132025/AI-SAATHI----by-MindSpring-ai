@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "../utils/axios";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { FaGoogle, FaApple, FaWindows } from "react-icons/fa";
+import { FaGoogle, FaApple, FaWindows, FaArrowLeft } from "react-icons/fa";
 import LeftBox from "../components/LeftBox.jsx";
 
 export default function Login() {
@@ -40,9 +40,18 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen w-screen bg-gradient-to-r from-blue-100 to-purple-100">
+    <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-gradient-to-r from-blue-100 to-purple-100">
+      {/* Back to Home Button */}
+      <button
+        className="flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow hover:bg-gray-100 absolute top-6 left-6"
+        onClick={() => navigate("/")}
+      >
+        <FaArrowLeft className="text-blue-500" />
+        <span className="font-medium text-blue-700">Back to Home</span>
+      </button>
+
       {/* Login Card */}
-      <div className="flex w-[700px] h-[400px] rounded-2xl shadow-xl overflow-hidden mx-auto">
+      <div className="flex w-[700px] h-[400px] rounded-2xl shadow-xl overflow-hidden mx-auto mt-16">
         {/* Left Side */}
         <LeftBox />
 

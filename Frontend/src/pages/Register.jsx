@@ -1,26 +1,36 @@
 import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 import axios from "../utils/axios";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const { login } = useContext(AuthContext);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-const [error, setError] = useState("");
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  try {
-    const res = await axios.post("/auth/register", form);
-    login(res.data.token);
-  } catch (err) {
-    setError("Registration failed. Please try again.");
-  }
-};
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    try {
+      const res = await axios.post("/auth/register", form);
+      login(res.data.token);
+    } catch (err) {
+      setError("Registration failed. Please try again.");
+    }
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen w-screen bg-gradient-to-r from-blue-100 to-purple-100">
+    <div className="flex items-center justify-center min-h-screen w-screen bg-gradient-to-r from-blue-100 to-purple-100 relative">
+      {/* Back to Home Button */}
+      <button
+        className="flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow hover:bg-gray-100 absolute top-6 left-6"
+        onClick={() => navigate("/")}
+      >
+        <FaArrowLeft className="text-blue-500" />
+        <span className="font-medium text-blue-700">Back to Home</span>
+      </button>
       <form onSubmit={handleSubmit} className="flex flex-col bg-white p-8 rounded-2xl shadow-xl w-[700px]">
         <h2 className="text-lg font-bold mb-6 text-center">Create Your Account</h2>
         <input

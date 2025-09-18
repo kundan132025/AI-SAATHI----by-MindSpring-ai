@@ -180,13 +180,21 @@ function Chat() {
                 <X size={18} />
               </button>
             </div>
+            {/* Back to Home Button */}
+            <Link to="/" className="mb-4">
+              <button
+                className="w-full flex items-center gap-2 px-3 py-2 rounded bg-white text-blue-700 font-semibold hover:bg-blue-100 border-none focus:outline-none"
+              >
+                <span className="text-lg">←</span> Back to Home
+              </button>
+            </Link>
             {user && (
-            <button
-              onClick={handleLogout}
-              className="w-full mb-4 px-3 py-2 rounded bg-red-500 hover:bg-red-600 text-white font-semibold border-none focus:outline-none"
-            >
-              Logout
-            </button>
+              <button
+                onClick={handleLogout}
+                className="w-full mb-4 px-3 py-2 rounded bg-red-500 hover:bg-red-600 text-white font-semibold border-none focus:outline-none"
+              >
+                Logout
+              </button>
             )}
             <h2 className="text-lg font-semibold mb-2">Previous Chats</h2>
             <div className="flex-1 overflow-y-auto space-y-2">

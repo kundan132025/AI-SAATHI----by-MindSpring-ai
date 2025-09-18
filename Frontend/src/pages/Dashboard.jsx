@@ -14,6 +14,7 @@ import AIInsights from "../components/AIInsights";
 import Reminders from "../components/Reminders";
 import ChatHistory from "../components/ChatHistory";
 import DailyCheckinForm from "../components/DailyCheckinForm";
+import { FaArrowLeft } from "react-icons/fa";
 
 import DashboardNavbar from "../components/Navbar/DashboardNavbar";
 
@@ -91,30 +92,28 @@ export default function Dashboard() {
   if (loading) return <div className="p-8 text-center">Loading dashboard...</div>;
 
   return (
-    <div className="bg-gradient-to-r from-blue-100 to-purple-100 min-h-screen w-screen p-6">
+    <div className="bg-gradient-to-r from-blue-100 to-purple-100 min-h-screen w-screen p-6 relative">
       <DashboardNavbar onLogout={handleLogout} />
 
-      {/* Back to Home Icon Button Row */}
+      {/* Back to Home Button */}
+      <button
+        style={{ left: 24, top: 88, position: "fixed", zIndex: 50 }}
+        className="flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow hover:bg-gray-100"
+        onClick={() => navigate("/")}
+      >
+        <FaArrowLeft className="text-blue-500" />
+        <span className="font-medium text-blue-700">Back to Home</span>
+      </button>
 
-      <div className="max-w-7xl mx-auto">
+      {/* Add top margin to push content below navbar */}
+      <div className="max-w-7xl mx-auto mt-12">
         {/* Title Section */}
-        <div className="mb-8 bg-green">
-          <h1 className="text-4xl  font-bold text-gray-800">AI Chat Sentiment Dashboard</h1>
-          <div className="text-lg text-gray-600 max-w-2xl mt-2">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-gray-800">AI Chat Sentiment Dashboard</h1>
+          <div className="text-lg text-gray-600 max-w-2xl mt-2 mx-auto">
             An overview of your conversational sentiment analysis.
           </div>
         </div>
-      <div className="max-w-7xl mx-auto bg-black flex items-center mt-6 mb-2">
-        <button
-          className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-500 text-white shadow hover:bg-blue-600 transition text-2xl"
-          onClick={() => navigate("/")}
-          title="Back to Home"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-7 h-7">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-      </div>
 
         {/* AI Insights */}
         <div className="mb-8">
