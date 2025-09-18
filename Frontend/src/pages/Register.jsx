@@ -20,14 +20,34 @@ const handleSubmit = async (e) => {
 };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="text" placeholder="Name"
-        onChange={(e) => setForm({ ...form, name: e.target.value })} />
-      <input type="email" placeholder="Email"
-        onChange={(e) => setForm({ ...form, email: e.target.value })} />
-      <input type="password" placeholder="Password"
-        onChange={(e) => setForm({ ...form, password: e.target.value })} />
-      <button type="submit">Register</button>
-    </form>
+    <div className="flex items-center justify-center min-h-screen w-screen bg-gradient-to-r from-blue-100 to-purple-100">
+      <form onSubmit={handleSubmit} className="flex flex-col bg-white p-8 rounded-2xl shadow-xl w-[700px]">
+        <h2 className="text-lg font-bold mb-6 text-center">Create Your Account</h2>
+        <input
+          type="text"
+          placeholder="Name"
+          className="w-full p-2 rounded-lg mb-4 shadow-inner focus:outline-none"
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full p-2 rounded-lg mb-4 shadow-inner focus:outline-none"
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          className="w-full p-2 rounded-lg mb-4 shadow-inner focus:outline-none"
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+        />
+        <button
+          type="submit"
+          className="bg-blue-400 text-white px-5 py-2 rounded-full shadow hover:bg-blue-500 transition"
+        >
+          Register
+        </button>
+      </form>
+    </div>
   );
 }

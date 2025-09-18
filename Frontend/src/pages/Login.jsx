@@ -34,8 +34,13 @@ export default function Login() {
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:5000/api/auth/google";
+    // Replace with your backend's Google OAuth endpoint
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-screen w-screen bg-gradient-to-r from-purple-200 to-blue-200">
+    <div className="flex items-center justify-center min-h-screen w-screen bg-gradient-to-r from-blue-100 to-purple-100">
       {/* Login Card */}
       <div className="flex w-[700px] h-[400px] rounded-2xl shadow-xl overflow-hidden mx-auto">
         {/* Left Side */}
@@ -71,7 +76,10 @@ export default function Login() {
           </button>
           {/* Social Logins */}
           <div className="flex space-x-6 text-2xl">
-            <FaGoogle className="cursor-pointer text-red-500" />
+            <FaGoogle
+              className="cursor-pointer text-red-500"
+              onClick={handleGoogleLogin}
+            />
             <FaWindows className="cursor-pointer text-blue-600" />
             <FaApple className="cursor-pointer text-black" />
           </div>

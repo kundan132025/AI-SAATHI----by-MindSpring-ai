@@ -4,7 +4,7 @@ import axios from "../utils/axios";
 import { AuthContext } from "../context/AuthContext";
 import WeeklyReport from "../components/WeeklyReport";
 import MonthlyReport from "../components/MonthlyReport";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import StressLineChart from "../components/StressLineChart";
 import SleepBarChart from "../components/SleepBarChart";
 import MoodPieChart from "../components/MoodPieChart";
@@ -15,8 +15,11 @@ import Reminders from "../components/Reminders";
 import ChatHistory from "../components/ChatHistory";
 import DailyCheckinForm from "../components/DailyCheckinForm";
 
+import DashboardNavbar from "../components/Navbar/DashboardNavbar";
+
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [weeklyData, setWeeklyData] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
   const [stressData, setStressData] = useState([]);
@@ -78,77 +81,109 @@ export default function Dashboard() {
     checkCheckin();
   }, [user]);
 
+  const handleLogout = () => {
+    // Your logout logic here (e.g., clear context, localStorage, redirect)
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
+
   if (!user) return <Navigate to="/login" />;
   if (loading) return <div className="p-8 text-center">Loading dashboard...</div>;
 
   return (
-    <div className="bg-gray-100 min-h-screen w-screen px-6 py-8">
-      <h1 className="text-3xl font-bold mb-2">AI Chat Sentiment Dashboard</h1>
-      <p className="mb-6 text-lg text-gray-600">An overview of your conversational sentiment analysis.</p>
+    <div className="bg-gradient-to-r from-blue-100 to-purple-100 min-h-screen w-screen p-6">
+      <DashboardNavbar onLogout={handleLogout} />
 
-      {/* AI Insights */}
-      <AIInsights insights={aiInsights || []} />
+      {/* Back to Home Icon Button Row */}
 
-      {/* Graphs/Reports */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="font-bold mb-2">Stress Level (7 days)</h3>
-          <StressLineChart data={stressData || []} />
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="font-bold mb-2">Sleep Hours</h3>
-          <SleepBarChart data={sleepData || []} />
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="font-bold mb-2">Mood Trends</h3>
-          <MoodPieChart data={moodData || []} />
-        </div>
-      </div>
-
-      {/* Weekly/Monthly Reports */}
-      <div className="flex flex-col md:flex-row gap-6 w-full mb-8">
-        <div className="flex-1">
-          <WeeklyReport weeklyData={weeklyData || []} />
-        </div>
-        <div className="flex-1">
-          <MonthlyReport monthlyData={monthlyData || []} />
-        </div>
-      </div>
-
-      {/* Plans/Reminders */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="font-bold text-lg mb-2">🗓️ Active Plan</h2>
-          <PlanProgressTracker plan={activePlan} />
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="font-bold text-lg mb-2">Reminders & Tips</h2>
-          <Reminders reminders={reminders || []} />
-        </div>
-      </div>
-
-      {/* Achievements */}
-      <div className="bg-white p-4 rounded-lg shadow mb-8">
-        <h2 className="font-bold text-lg mb-2">🏆 Achievements</h2>
-        <Achievements streaks={achievements || {}} />
-      </div>
-
-      {/* Chat History (optional) */}
-      <div className="bg-white p-4 rounded-lg shadow mb-8">
-        <h2 className="font-bold text-lg mb-2">Recent Conversations</h2>
-        {recentChats.length === 0 ? (
-          <div className="text-gray-500 flex items-center gap-2">
-            <span role="img" aria-label="chat">💬</span> No recent chats yet. Start a conversation!
+      <div className="max-w-7xl mx-auto">
+        {/* Title Section */}
+        <div className="mb-8 bg-green">
+          <h1 className="text-4xl  font-bold text-gray-800">AI Chat Sentiment Dashboard</h1>
+          <div className="text-lg text-gray-600 max-w-2xl mt-2">
+            An overview of your conversational sentiment analysis.
           </div>
-        ) : (
-          <ChatHistory chats={recentChats} />
+        </div>
+      <div className="max-w-7xl mx-auto bg-black flex items-center mt-6 mb-2">
+        <button
+          className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-500 text-white shadow hover:bg-blue-600 transition text-2xl"
+          onClick={() => navigate("/")}
+          title="Back to Home"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-7 h-7">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      </div>
+
+        {/* AI Insights */}
+        <div className="mb-8">
+          <AIInsights insights={aiInsights || []} />
+        </div>
+
+        {/* Graphs/Reports */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 justify-items-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
+            <h3 className="font-bold mb-4 text-center">Stress Level (7 days)</h3>
+            <StressLineChart data={stressData || []} />
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
+            <h3 className="font-bold mb-4 text-center">Sleep Hours</h3>
+            <SleepBarChart data={sleepData || []} />
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
+            <h3 className="font-bold mb-4 text-center">Mood Trends</h3>
+            <MoodPieChart data={moodData || []} />
+          </div>
+        </div>
+
+        {/* Weekly/Monthly Reports */}
+        <div className="flex flex-col md:flex-row gap-6 mb-8">
+          <div className="flex-1">
+            <WeeklyReport weeklyData={weeklyData || []} />
+          </div>
+          <div className="flex-1">
+            <MonthlyReport monthlyData={monthlyData || []} />
+          </div>
+        </div>
+
+        {/* Plans/Reminders */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="font-bold text-lg mb-4 text-center">🗓️ Active Plan</h2>
+            <PlanProgressTracker plan={activePlan} />
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="font-bold text-lg mb-4 text-center">Reminders & Tips</h2>
+            <Reminders reminders={reminders || []} />
+          </div>
+        </div>
+
+        {/* Achievements */}
+        <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
+          <h2 className="font-bold text-lg mb-4 text-center">🏆 Achievements</h2>
+          <Achievements streaks={achievements || {}} />
+        </div>
+
+        {/* Chat History (optional) */}
+        <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
+          <h2 className="font-bold text-lg mb-4 text-center">Recent Conversations</h2>
+          {recentChats.length === 0 ? (
+            <div className="text-gray-500 flex items-center justify-center gap-2 py-8">
+              <span role="img" aria-label="chat">💬</span> No recent chats yet. Start a conversation!
+            </div>
+          ) : (
+            <ChatHistory chats={recentChats} />
+          )}
+        </div>
+
+        {/* Daily Check-in Form */}
+        {!checkedInToday && (
+          <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <DailyCheckinForm userId={user._id || user.id} onSubmit={() => setCheckedInToday(true)} />
+          </div>
         )}
       </div>
-
-      {/* Daily Check-in Form */}
-      {!checkedInToday && (
-        <DailyCheckinForm userId={user._id || user.id} onSubmit={() => setCheckedInToday(true)} />
-      )}
     </div>
   );
 }

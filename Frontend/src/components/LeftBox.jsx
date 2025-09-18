@@ -44,7 +44,7 @@ export default function LeftBox() {
     if (!paused) {
       intervalRef.current = setInterval(() => {
         setIndex((prev) => (prev + 1) % thoughts.length);
-      }, 5000); // ⏱️ change every 5 sec
+      }, 3000); // ⏱️ change every 3 sec
     }
     return () => clearInterval(intervalRef.current);
   }, [paused]);

@@ -165,7 +165,7 @@ function Chat() {
   };
 
   return (
-    <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-r from-pink-100 via-blue-100 to-pink-100">
+    <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-r from-blue-100 to-purple-100">
       <Navbar2 onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
       <div className="flex w-screen bg-white min-h-screen">
         {/* Sidebar */}

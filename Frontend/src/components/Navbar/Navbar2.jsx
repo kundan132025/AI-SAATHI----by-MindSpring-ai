@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "./navbar.css";
 import { Menu } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
@@ -22,7 +22,7 @@ export default function Navbar2({ onToggleSidebar }) {
       </div>
 
       {/* Centered title only when user is logged in */}
-      {user && (
+      {!user && (
         <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xl font-bold">
           Chat Anonymous
         </div>
@@ -54,3 +54,9 @@ export default function Navbar2({ onToggleSidebar }) {
     </header>
   );
 }
+
+<nav className="nav-links flex gap-8 ml-8">
+  <Link to="/chat" className="nav-link text-gray-700 font-medium hover:text-blue-600 transition">Chat</Link>
+  <Link to="/stories" className="nav-link text-gray-700 font-medium hover:text-blue-600 transition">Flashcard</Link>
+  <Link to="/community" className="nav-link text-gray-700 font-medium hover:text-blue-600 transition">Community</Link>
+</nav>

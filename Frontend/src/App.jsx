@@ -6,21 +6,22 @@ import Login from './pages/Login';
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import DailyCheckinForm from "./components/DailyCheckinForm";
-import Navbar2 from "./components/Navbar/Navbar2";
+
 import { AuthProvider, AuthContext } from "./context/AuthContext";
+import Stories from "./pages/Stories";
 
 function App() {
   const { user } = useContext(AuthContext);
 
   return (
     <BrowserRouter>
-      <Navbar2 />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard userId={user?.id || user?._id} />} />
+        <Route path="/stories" element={<Stories />} />
         {/* Add DailyCheckinForm route if needed */}
         {/* <Route path="/checkin" element={<DailyCheckinForm userId={user?.id || user?._id} />} /> */}
       </Routes>
