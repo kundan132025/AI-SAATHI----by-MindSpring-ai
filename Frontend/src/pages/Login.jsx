@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { FaGoogle, FaApple, FaWindows } from "react-icons/fa";
 import LeftBox from "../components/LeftBox.jsx";
 import FloatingBubbles from "../components/FloatingBubbles/FloatingBubbles.jsx";
+import { motion } from "framer-motion";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
