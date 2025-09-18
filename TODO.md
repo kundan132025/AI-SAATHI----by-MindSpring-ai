@@ -1,0 +1,4 @@
+- [x] Remove OTP from form state in Register.jsx
+- [x] Remove OTP input field and label from JSX in Register.jsx
+- [x] Remove OTP validation check in handleSubmit function in Register.jsx
+- [x] Change card height from h-[550px] to h-[400px] in Register.jsx

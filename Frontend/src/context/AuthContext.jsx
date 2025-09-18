@@ -20,13 +20,18 @@ export const AuthProvider = ({ children }) => {
     axios.get("/auth/me").then((res) => setUser(res.data));
   };
 
+  const register = async (formData) => {
+    const res = await axios.post("/auth/register", formData);
+    login(res.data.token);
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
