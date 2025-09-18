@@ -18,7 +18,7 @@ export default function Home() {
             <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 mb-8">
               YOUTH MENTAL WELLNESS
             </h1>
-            <button className="chat-btn"
+            <button className="chat-btn focus:outline-none"
               onClick={() => navigate("/chat")}
             >CHAT</button>
           </div>

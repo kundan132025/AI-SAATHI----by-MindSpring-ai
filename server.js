@@ -11,13 +11,15 @@ import session from "express-session";
 import authRoutes from "./Backend/routes/authRoutes.js";
 import oauthRoutes from "./Backend/routes/oauthRoutes.js";
 import "./Backend/config/passport.js"; // load passport config
-
+import chatRoutes2 from "./Backend/routes/chatRoutes.js";
+import reportRouter from "./Backend/routes/reportRouter.js";
+import planRouter from "./Backend/routes/planRouter.js";
+import dashboardRoutes from "./Backend/routes/dashboardRoutes.js"; // Import the dashboard routes
+import checkinRoutes from "./Backend/routes/checkinRoutes.js";
 
 dotenv.config();
 const app = express();
-app.use(cors(
-
-));
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 
 app.use(
@@ -43,10 +45,14 @@ app.get("/api/auth/google", (req, res, next) => {
   next();
 }, passport.authenticate("google", { scope: ["profile", "email"] }));
 app.get('/' , (req,res)=>{
-    res.send("Server is working");
+  res.send("Server is working");
 });
 
-
+app.use("/api/chat", chatRoutes2);
+app.use("/api/report", reportRouter);
+app.use("/api/plan", planRouter);
+app.use("/api/dashboard", dashboardRoutes); // Use the dashboard routes
+app.use("/api/checkin", checkinRoutes);
 
 const PORT = process.env.PORT || 5000;
 

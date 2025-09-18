@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "../utils/axios";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -18,15 +17,22 @@ export default function Login() {
     const token = params.get("token");
     if (token) {
       login(token);
-      window.history.replaceState({}, document.title, "/dashboard");
+      window.history.replaceState({}, document.title, "/chat");
+      navigate("/chat");
     }
-  }, [login]);
+    // eslint-disable-next-line
+  }, [login, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await axios.post("/auth/login", form);
-    login(res.data.token);
-    navigate("/dashboard"); // Navigate to dashboard on successful login
+    try {
+      const res = await axios.post("/auth/login", form);
+      console.log("TOKEN:", res.data.token);
+      login(res.data.token);
+      navigate("/chat"); // Redirect to chat after login
+    } catch (err) {
+      // handle error
+    }
   };
 
   return (
@@ -74,7 +80,6 @@ export default function Login() {
         }}
       >
         {/* Left Side */}
-
         <LeftBox />
 
         {/* Right Side */}
