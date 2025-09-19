@@ -7,6 +7,7 @@ import ttsRoutes from "./Backend/routes/index.js";
 import mongoose from "mongoose";
 import passport from "passport";
 import session from "express-session";
+import MongoStore from "connect-mongo";
 import authRoutes from "./Backend/routes/authRoutes.js";
 import oauthRoutes from "./Backend/routes/oauthRoutes.js";
 import "./Backend/config/passport.js"; // load passport config
@@ -24,7 +25,7 @@ const app = express();
 // Configure CORS for both development and production
 const allowedOrigins = [
   "http://localhost:5173", // Local development
-  "https://your-vercel-app.vercel.app", // Replace with your actual Vercel URL
+  "https://ai-saathi-by-mind-spring-ai-ancu.vercel.app", // Your actual Vercel URL
   process.env.FRONTEND_URL // Environment variable for production
 ].filter(Boolean);
 
@@ -36,9 +37,18 @@ app.use(express.json());
 
 app.use(
   session({
-    secret: process.env.JWT_SECRET, 
+    secret: process.env.JWT_SECRET || "ai-saathi-fallback-secret", 
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      touchAfter: 24 * 3600, // lazy session update
+    }),
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // HTTPS in production
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
   })
 );
 
@@ -83,10 +93,17 @@ app.use("/api/stories", storiesRoutes);
 app.post("/api/tts", ttsHandler);
 
 mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log("MongoDB connected ✅");
+    console.log("✅ MongoDB connected successfully");
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT} 🚀`));
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`� CORS enabled for: ${allowedOrigins.join(', ')}`);
+    });
   })
-  .catch((err) => console.error(err));
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err.message);
+    process.exit(1);
+  });
