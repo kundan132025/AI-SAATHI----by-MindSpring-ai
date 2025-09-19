@@ -7,16 +7,13 @@ const getBaseURL = () => {
   const defaultProdUrl = 'https://ai-saathi-backend.onrender.com';
   const devUrl = 'http://localhost:5000';
   
-  let baseURL;
-  if (isProduction) {
-    baseURL = envUrl || defaultProdUrl;
-  } else {
-    baseURL = devUrl;
-  }
+  // Force production URL for now to test
+  let baseURL = defaultProdUrl;
   
   console.log('🌍 Environment:', isProduction ? 'Production' : 'Development');
   console.log('🔗 API Base URL:', baseURL);
   console.log('📝 VITE_API_URL:', envUrl);
+  console.log('🚀 FORCED to use production URL for testing');
   
   return baseURL;
 };
