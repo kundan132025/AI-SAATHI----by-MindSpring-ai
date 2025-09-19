@@ -13,7 +13,7 @@ export default defineConfig({
           // Router
           'router': ['react-router-dom'],
           // Charts and data visualization  
-          'charts': ['chart.js', 'react-chartjs-2', 'rechart'],
+          'charts': ['chart.js', 'react-chartjs-2', 'recharts'],
           // UI libraries
           'ui-libs': ['framer-motion', 'react-icons', 'lucide-react'],
           // Auth and utilities
