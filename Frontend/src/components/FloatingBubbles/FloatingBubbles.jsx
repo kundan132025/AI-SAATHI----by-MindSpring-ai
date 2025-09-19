@@ -24,7 +24,7 @@
 // }
 
 import React from "react";
-import "./Bubbles.css";
+import "./bubbles.css";
 
 export default function FloatingBubbles() {
   return (
