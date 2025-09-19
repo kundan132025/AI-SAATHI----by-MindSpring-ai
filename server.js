@@ -25,13 +25,37 @@ const app = express();
 // Configure CORS for both development and production
 const allowedOrigins = [
   "http://localhost:5173", // Local development
-  "https://ai-saathi-by-mind-spring-ai-ancu.vercel.app", // Your actual Vercel URL
+  "http://localhost:3000", // Alternative local development
+  "https://ai-saathi-by-mind-spring-ai-ancu.vercel.app", // Your main Vercel URL
+  /^https:\/\/ai-saathi-by-mind-spring-ai-ancu.*\.vercel\.app$/, // All Vercel preview URLs
   process.env.FRONTEND_URL // Environment variable for production
 ].filter(Boolean);
 
 app.use(cors({ 
-  origin: allowedOrigins,
-  credentials: true 
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin matches any allowed origin
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (typeof allowedOrigin === 'string') {
+        return origin === allowedOrigin;
+      } else if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return false;
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 app.use(express.json());
 
