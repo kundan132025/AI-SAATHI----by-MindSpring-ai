@@ -1,10 +1,11 @@
 import React from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 const StartPlan = ({ userId, refreshPlan }) => {
   const startPlan = async (type) => {
     try {
-      await axios.post("http://localhost:5000/api/plan/start", {
+      await axios.post(`${API_BASE_URL}/api/plan/start`, {
         userId,
         type,
       });

@@ -1,8 +1,9 @@
 import axios from "../utils/axios";
+import { API_BASE_URL } from "../config/api";
 
 // Send message + trigger sentiment analysis
 export const sendChatMessage = async (userId, message) => {
-  const res = await axios.post("http://localhost:5000/api/chat/analyze", {
+  const res = await axios.post(`${API_BASE_URL}/api/chat/analyze`, {
     userId,
     message,
   });
@@ -11,6 +12,6 @@ export const sendChatMessage = async (userId, message) => {
 
 // Fetch chat history for dashboard
 export const getChatHistory = async (userId) => {
-  const res = await axios.get(`http://localhost:5000/api/chat/history/${userId}`);
+  const res = await axios.get(`${API_BASE_URL}/api/chat/history/${userId}`);
   return res.data;
 };

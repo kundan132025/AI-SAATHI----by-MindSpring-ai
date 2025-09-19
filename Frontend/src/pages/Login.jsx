@@ -4,6 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { FaGoogle, FaApple, FaWindows, FaArrowLeft } from "react-icons/fa";
 import LeftBox from "../components/LeftBox.jsx";
+import { API_BASE_URL } from "../config/api";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -35,7 +36,7 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:5000/api/auth/google";
+    window.location.href = `${API_BASE_URL}/api/auth/google`;
     // Replace with your backend's Google OAuth endpoint
   };
 

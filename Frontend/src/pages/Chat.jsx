@@ -5,6 +5,8 @@ import { Menu, X } from "lucide-react";
 import Navbar2 from "../components/Navbar/Navbar2";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import axiosInstance from "../utils/axios";
+import { API_BASE_URL } from "../config/api";
 
 function Chat() {
   const [messages, setMessages] = useState([]);
@@ -21,7 +23,7 @@ function Chat() {
     async function fetchChats() {
       if (!user) return;
       // Replace this with your real API endpoint for chat history
-      const res = await fetch(`http://localhost:5000/api/chat/history/${user.id || user._id}`);
+      const res = await fetch(`${API_BASE_URL}/api/chat/history/${user.id || user._id}`);
       if (res.ok) {
         const data = await res.json();
         setPreviousChats(data.chats || []);
@@ -49,7 +51,7 @@ function Chat() {
 
   const playVoice = async (text) => {
   try {
-    const res = await fetch("http://localhost:5000/api/tts", {
+    const res = await fetch(`${API_BASE_URL}/api/tts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
@@ -77,7 +79,7 @@ function Chat() {
 
 
   try {
-    const response = await fetch("http://localhost:5000/api/chat", {
+    const response = await fetch(`${API_BASE_URL}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
@@ -86,7 +88,7 @@ function Chat() {
       }),
     });
 
-    const response_data = await fetch("http://localhost:5000/api/chat/analyze", {
+    const response_data = await fetch(`${API_BASE_URL}/api/chat/analyze`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
@@ -138,7 +140,7 @@ function Chat() {
         const formData = new FormData();
         formData.append("audio", blob, "speech.webm");
 
-        const response = await fetch("http://localhost:5000/api/speech", {
+        const response = await fetch(`${API_BASE_URL}/api/speech`, {
           method: "POST",
           body: formData,
         });
@@ -216,7 +218,7 @@ function Chat() {
               <button
                 onClick={() => {
                   setMessages([]);
-                  fetch("http://localhost:5000/api/chat/reset", { method: "POST" });
+                  fetch(`${API_BASE_URL}/api/chat/reset`, { method: "POST" });
                 }}
                 className="w-full px-3 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-900 font-semibold border-none focus:outline-none"
               >
