@@ -2,13 +2,15 @@ import axios from "axios";
 
 // Determine the API base URL based on environment
 const getBaseURL = () => {
-  // Use environment variable in production, fallback to localhost in development
-  return import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  // In production, use the Render backend URL
+  if (import.meta.env.PROD) {
+    return import.meta.env.VITE_API_URL || 'https://ai-saathi-backend.onrender.com';
+  }
+  // In development, use localhost
+  return 'http://localhost:5000';
 };
 
-const axiosInstance = axios.create({
+export default axios.create({
   baseURL: getBaseURL(),
   withCredentials: true, // Important for sessions/cookies
 });
-
-export default axiosInstance;
