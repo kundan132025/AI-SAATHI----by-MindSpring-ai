@@ -1,30 +1,42 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useContext } from "react";
-import Home from "./pages/Home";
-import Chat from "./pages/Chat";
-import Login from './pages/Login';
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import DailyCheckinForm from "./components/DailyCheckinForm";
-
+import { useContext, Suspense } from "react";
+import { lazy } from "react";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
-import Stories from "./pages/Stories";
+
+// Lazy load page components for code splitting
+const Home = lazy(() => import("./pages/Home"));
+const Chat = lazy(() => import("./pages/Chat"));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import("./pages/Register"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Stories = lazy(() => import("./pages/Stories"));
+const DailyCheckinForm = lazy(() => import("./components/DailyCheckinForm"));
+
+// Loading fallback component
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+    <span className="ml-3 text-lg text-gray-600">Loading...</span>
+  </div>
+);
 
 function App() {
   const { user } = useContext(AuthContext);
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard userId={user?.id || user?._id} />} />
-        <Route path="/stories" element={<Stories />} />
-        {/* Add DailyCheckinForm route if needed */}
-        {/* <Route path="/checkin" element={<DailyCheckinForm userId={user?.id || user?._id} />} /> */}
-      </Routes>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<Dashboard userId={user?.id || user?._id} />} />
+          <Route path="/stories" element={<Stories />} />
+          {/* Add DailyCheckinForm route if needed */}
+          {/* <Route path="/checkin" element={<DailyCheckinForm userId={user?.id || user?._id} />} /> */}
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }
