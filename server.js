@@ -108,6 +108,21 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// CORS test endpoint with detailed debugging
+app.get('/api/test-cors', (req, res) => {
+  console.log('🔍 CORS Test endpoint hit');
+  console.log('📥 Origin:', req.headers.origin);
+  console.log('📥 User-Agent:', req.headers['user-agent']);
+  console.log('📥 All headers:', req.headers);
+  
+  res.json({
+    message: "CORS test successful",
+    origin: req.headers.origin,
+    timestamp: new Date().toISOString(),
+    corsEnabled: true
+  });
+});
+
 app.use("/api/chat", chatRoutes2);
 app.use("/api/report", reportRouter);
 app.use("/api/plan", planRouter);
