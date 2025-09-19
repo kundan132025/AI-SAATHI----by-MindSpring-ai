@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const StorySchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -7,4 +7,4 @@ const StorySchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("Story", StorySchema);
+export default mongoose.model("Story", StorySchema);

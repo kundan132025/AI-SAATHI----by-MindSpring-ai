@@ -1,6 +1,7 @@
-const express = require("express");
+import express from "express";
+import Story from "../models/Story.js";
+
 const router = express.Router();
-const Story = require("../models/Story");
 
 // GET /api/stories?category=motivational
 router.get("/", async (req, res) => {
@@ -35,4 +36,4 @@ router.post("/", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

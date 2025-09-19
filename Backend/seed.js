@@ -1,6 +1,8 @@
-require("dotenv").config();
-const mongoose = require("mongoose");
-const Story = require("./models/Story");
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import Story from "./models/Story.js";
+
+dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/ai-saathi";
 
