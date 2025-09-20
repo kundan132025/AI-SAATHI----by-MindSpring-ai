@@ -101,12 +101,32 @@ app.get('/' , (req,res)=>{
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({
+  const dbStatus = mongoose.connection.readyState;
+  const dbStatusMap = {
+    0: 'disconnected',
+    1: 'connected', 
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+  
+  res.status(200).json({
     status: "healthy",
-    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    server: "running",
+    database: dbStatusMap[dbStatus] || 'unknown',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    corsOrigins: allowedOrigins
+    port: process.env.PORT || 5000,
+    uptime: process.uptime(),
+    memory: process.memoryUsage()
+  });
+});
+
+// Simple root endpoint for basic health check
+app.get('/', (req, res) => {
+  res.json({
+    message: "AI Saathi Backend is running!",
+    status: "healthy",
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -145,18 +165,53 @@ app.use("/api/checkin", checkinRoutes);
 app.use("/api/stories", storiesRoutes);
 app.post("/api/tts", ttsHandler);
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("✅ MongoDB connected successfully");
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`� CORS enabled for: ${allowedOrigins.join(', ')}`);
+// Start server immediately, don't wait for MongoDB
+const PORT = process.env.PORT || 5000;
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 CORS enabled for: ${allowedOrigins.join(', ')}`);
+});
+
+// Connect to MongoDB with timeout and retry logic
+const connectWithRetry = () => {
+  mongoose
+    .connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 10000, // 10 seconds timeout
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      bufferMaxEntries: 0, // Disable mongoose buffering
+      bufferCommands: false, // Disable mongoose buffering
+    })
+    .then(() => {
+      console.log("✅ MongoDB connected successfully");
+    })
+    .catch((err) => {
+      console.error("❌ MongoDB connection error:", err.message);
+      console.log("🔄 Retrying MongoDB connection in 5 seconds...");
+      setTimeout(connectWithRetry, 5000);
     });
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err.message);
-    process.exit(1);
+};
+
+// Initial connection attempt
+connectWithRetry();
+
+// Handle MongoDB connection events
+mongoose.connection.on('disconnected', () => {
+  console.log('📴 MongoDB disconnected. Attempting to reconnect...');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('🔴 MongoDB error:', err);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('📤 SIGTERM received');
+  server.close(() => {
+    console.log('🔄 Process terminated');
+    mongoose.connection.close(false, () => {
+      console.log('📴 MongoDB connection closed');
+      process.exit(0);
+    });
   });
+});
