@@ -9,7 +9,7 @@ export default function Navbar2({ onToggleSidebar }) {
   const navigate = useNavigate();
 
   return (
-    <header className="navbar fixed top-0 left-0 w-full z-50 flex items-center justify-between px-4 py-2 bg-white shadow">
+    <header className="navbar fixed top-0 left-0 w-full z-40 flex items-center justify-between px-4 py-2 bg-white shadow">
       <div className="flex items-center">
         {/* Toggle button */}
         <button
