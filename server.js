@@ -232,9 +232,19 @@ const connectWithRetry = () => {
     maxPoolSize: 10, // Maintain up to 10 socket connections
     retryWrites: true, // Retry writes on failure
     retryReads: true, // Retry reads on failure
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
   };
 
   console.log('🔗 Attempting to connect to MongoDB...');
+  console.log('🌐 MongoDB URI exists:', !!process.env.MONGO_URI);
+  console.log('🔐 URI length:', process.env.MONGO_URI?.length || 0);
+  
+  if (!process.env.MONGO_URI) {
+    console.error('❌ MONGO_URI environment variable is not set');
+    setTimeout(connectWithRetry, 10000);
+    return;
+  }
   
   mongoose
     .connect(process.env.MONGO_URI, mongoOptions)
@@ -243,6 +253,8 @@ const connectWithRetry = () => {
     })
     .catch((err) => {
       console.error("❌ MongoDB connection error:", err.message);
+      console.error("❌ Error code:", err.code);
+      console.error("❌ Error name:", err.name);
       console.log("🔄 Retrying MongoDB connection in 10 seconds...");
       setTimeout(connectWithRetry, 10000);
     });
@@ -252,12 +264,20 @@ const connectWithRetry = () => {
 connectWithRetry();
 
 // Handle MongoDB connection events
+mongoose.connection.on('connected', () => {
+  console.log('✅ MongoDB connected successfully');
+});
+
 mongoose.connection.on('disconnected', () => {
   console.log('📴 MongoDB disconnected. Attempting to reconnect...');
 });
 
 mongoose.connection.on('error', (err) => {
   console.error('🔴 MongoDB error:', err);
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('🔄 MongoDB reconnected successfully');
 });
 
 // Graceful shutdown
