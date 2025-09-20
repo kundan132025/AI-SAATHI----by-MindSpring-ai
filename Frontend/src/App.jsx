@@ -35,6 +35,14 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard userId={user?.id || user?._id} />} />
           <Route path="/stories" element={<Stories />} />
+          {/* Catch-all route for 404 handling */}
+          <Route path="*" element={<div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold mb-4">Page Not Found</h1>
+              <p className="mb-4">The page you're looking for doesn't exist.</p>
+              <Link to="/" className="text-blue-500 hover:underline">Go Home</Link>
+            </div>
+          </div>} />
           {/* Add DailyCheckinForm route if needed */}
           {/* <Route path="/checkin" element={<DailyCheckinForm userId={user?.id || user?._id} />} /> */}
         </Routes>

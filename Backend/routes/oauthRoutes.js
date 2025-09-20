@@ -28,11 +28,21 @@ router.get(
         ? 'https://ai-saathi-by-mind-spring-ai-ancu.vercel.app' 
         : 'http://localhost:5173';
       
-      console.log('🔗 Redirecting to:', `${frontendUrl}/auth/callback?token=${token}`);
-      res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+      // Try callback route first, fallback to chat route
+      const callbackUrl = `${frontendUrl}/auth/callback?token=${token}`;
+      const fallbackUrl = `${frontendUrl}/chat?token=${token}`;
+      
+      console.log('🔗 Primary redirect to:', callbackUrl);
+      console.log('🔗 Fallback would be:', fallbackUrl);
+      
+      // For now, use direct chat redirect as it's more reliable
+      res.redirect(fallbackUrl);
     } catch (error) {
       console.error('❌ OAuth callback error:', error);
-      res.redirect('/login?error=oauth_failed');
+      const frontendUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://ai-saathi-by-mind-spring-ai-ancu.vercel.app' 
+        : 'http://localhost:5173';
+      res.redirect(`${frontendUrl}/login?error=oauth_failed`);
     }
   }
 );
