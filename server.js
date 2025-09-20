@@ -90,10 +90,6 @@ app.use("/api", speechRoutes);
 app.use("/api", ttsRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", oauthRoutes);
-app.get("/api/auth/google", (req, res, next) => {
-  console.log("Google auth route hit");
-  next();
-}, passport.authenticate("google", { scope: ["profile", "email"] }));
 app.get('/' , (req,res)=>{
   res.json({
     message: "AI Saathi Backend API is running!",
@@ -111,6 +107,18 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     corsOrigins: allowedOrigins
+  });
+});
+
+// Debug endpoint to check OAuth configuration
+app.get('/api/debug/oauth', (req, res) => {
+  res.json({
+    nodeEnv: process.env.NODE_ENV,
+    callbackURL: process.env.NODE_ENV === 'production' 
+      ? "https://ai-saathi-backend.onrender.com/api/auth/google/callback"
+      : "http://localhost:5000/api/auth/google/callback",
+    googleClientId: process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET',
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET'
   });
 });
 
