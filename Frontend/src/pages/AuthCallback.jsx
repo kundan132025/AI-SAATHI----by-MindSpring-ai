@@ -3,11 +3,25 @@ import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
+// Global flag to prevent multiple OAuth processing
+window.oauthProcessed = window.oauthProcessed || false;
+
 function AuthCallback() {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
   useEffect(() => {
+    // Check global flag first - PREVENT ALL DUPLICATE PROCESSING
+    if (window.oauthProcessed) {
+      console.log('🛑 OAuth already processed globally, redirecting to chat...');
+      navigate('/chat', { replace: true });
+      return;
+    }
+
+    // Mark as processed immediately at global level
+    window.oauthProcessed = true;
+    console.log('🔄 AuthCallback: Starting OAuth processing (GLOBAL FLAG SET)');
+    
     // Get URL params immediately and only once
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
@@ -22,6 +36,7 @@ function AuthCallback() {
     
     if (!token) {
       console.error('❌ No token found');
+      window.oauthProcessed = false; // Reset flag on error
       navigate('/login?error=no_token', { replace: true });
       return;
     }
@@ -55,6 +70,7 @@ function AuthCallback() {
       
     } catch (error) {
       console.error('❌ OAuth processing failed:', error);
+      window.oauthProcessed = false; // Reset flag on error
       navigate('/login?error=oauth_failed', { replace: true });
     }
   }, []); // NO dependencies to prevent any re-runs

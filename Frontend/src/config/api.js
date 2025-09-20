@@ -3,7 +3,7 @@ const getApiUrl = () => {
   const isProduction = import.meta.env.PROD;
   const envUrl = import.meta.env.VITE_API_URL;
   const defaultProdUrl = 'https://ai-saathi-backend.onrender.com';
-  const devUrl = 'http://localhost:5000';
+  const devUrl = 'https://ai-saathi-backend.onrender.com'; // Use production backend for local dev
   
   if (isProduction) {
     return envUrl || defaultProdUrl;

@@ -70,6 +70,8 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    // Reset the global OAuth flag for new login attempts
+    window.oauthProcessed = false;
   };
 
   return (
