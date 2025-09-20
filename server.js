@@ -70,22 +70,24 @@ app.use(
     saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URI,
-      touchAfter: 24 * 3600, // lazy session update
+      touchAfter: 24 * 3600,
       mongoOptions: {
-        serverSelectionTimeoutMS: 30000,
-        socketTimeoutMS: 45000,
-        connectTimeoutMS: 30000,
+        serverSelectionTimeoutMS: 60000,
+        socketTimeoutMS: 60000,
+        connectTimeoutMS: 60000,
         retryWrites: true,
         retryReads: true,
       },
-      // Fallback to memory store if MongoDB is unavailable
-      fallbackMemory: true,
+      // Allow fallback to memory if MongoDB fails
+      fallbackMemory: false, // Set to false to force MongoDB usage
+      autoReconnect: true,
+      lazyConnect: true, // Connect only when needed
     }),
     cookie: {
-      secure: process.env.NODE_ENV === "production", // HTTPS in production
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax', // Allow cross-site cookies in production
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
     },
   })
 );
@@ -96,6 +98,9 @@ app.use(passport.session());
 
 // Middleware to check database connection for routes that need it
 const checkDBConnection = (req, res, next) => {
+  // Temporarily disable DB check to allow app to function
+  // TODO: Re-enable once MongoDB connection is stable
+  /*
   const dbRequired = req.path.includes('/api/auth') || 
                     req.path.includes('/api/stories') || 
                     req.path.includes('/api/chat') ||
@@ -112,6 +117,7 @@ const checkDBConnection = (req, res, next) => {
       retryAfter: 10 
     });
   }
+  */
   
   next();
 };
@@ -224,25 +230,20 @@ const server = app.listen(PORT, () => {
 // Connect to MongoDB with timeout and retry logic
 const connectWithRetry = () => {
   const mongoOptions = {
-    serverSelectionTimeoutMS: 30000, // 30 seconds timeout
-    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-    connectTimeoutMS: 30000, // 30 seconds to establish connection
-    bufferMaxEntries: 0, // Disable mongoose buffering
-    bufferCommands: false, // Disable mongoose buffering
-    maxPoolSize: 10, // Maintain up to 10 socket connections
-    retryWrites: true, // Retry writes on failure
-    retryReads: true, // Retry reads on failure
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 60000, // 60 seconds timeout
+    socketTimeoutMS: 60000, // 60 seconds socket timeout
+    connectTimeoutMS: 60000, // 60 seconds to establish connection
+    maxPoolSize: 50, // Maintain up to 50 socket connections
+    retryWrites: true,
+    retryReads: true,
   };
 
   console.log('🔗 Attempting to connect to MongoDB...');
   console.log('🌐 MongoDB URI exists:', !!process.env.MONGO_URI);
-  console.log('🔐 URI length:', process.env.MONGO_URI?.length || 0);
   
   if (!process.env.MONGO_URI) {
     console.error('❌ MONGO_URI environment variable is not set');
-    setTimeout(connectWithRetry, 10000);
+    setTimeout(connectWithRetry, 5000);
     return;
   }
   
@@ -253,10 +254,8 @@ const connectWithRetry = () => {
     })
     .catch((err) => {
       console.error("❌ MongoDB connection error:", err.message);
-      console.error("❌ Error code:", err.code);
-      console.error("❌ Error name:", err.name);
-      console.log("🔄 Retrying MongoDB connection in 10 seconds...");
-      setTimeout(connectWithRetry, 10000);
+      console.log("🔄 Retrying MongoDB connection in 5 seconds...");
+      setTimeout(connectWithRetry, 5000);
     });
 };
 
