@@ -27,31 +27,35 @@ const allowedOrigins = [
   "http://localhost:5173", // Local development
   "http://localhost:3000", // Alternative local development
   "https://ai-saathi-by-mind-spring-ai-ancu.vercel.app", // Your main Vercel URL
-  /^https:\/\/ai-saathi-by-mind-spring-ai-ancu.*\.vercel\.app$/, // All Vercel preview URLs
-  process.env.FRONTEND_URL // Environment variable for production
-].filter(Boolean);
+];
+
+// Add environment variable for production
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
 
 app.use(cors({ 
   origin: function (origin, callback) {
+    console.log('🌍 Request origin:', origin);
+    
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    // Check if origin matches any allowed origin
-    const isAllowed = allowedOrigins.some(allowedOrigin => {
-      if (typeof allowedOrigin === 'string') {
-        return origin === allowedOrigin;
-      } else if (allowedOrigin instanceof RegExp) {
-        return allowedOrigin.test(origin);
-      }
-      return false;
-    });
-    
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      console.log('CORS blocked origin:', origin);
-      callback(new Error('Not allowed by CORS'));
+    // Check exact matches first
+    if (allowedOrigins.includes(origin)) {
+      console.log('✅ CORS allowed for:', origin);
+      return callback(null, true);
     }
+    
+    // Check for Vercel preview URLs
+    if (origin.includes('vercel.app') && origin.includes('ai-saathi-by-mind-spring')) {
+      console.log('✅ CORS allowed for Vercel preview:', origin);
+      return callback(null, true);
+    }
+    
+    console.log('❌ CORS blocked origin:', origin);
+    console.log('📝 Allowed origins:', allowedOrigins);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -104,7 +108,9 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: "healthy",
     database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    corsOrigins: allowedOrigins
   });
 });
 
