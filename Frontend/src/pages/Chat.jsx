@@ -3,7 +3,7 @@ import MessageBubble from "../components/MessageBubble/MessageBubble";
 import TypingIndicator from "../components/TypingIndicator";
 import { Menu, X } from "lucide-react";
 import Navbar2 from "../components/Navbar/Navbar2";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import axiosInstance from "../utils/axios";
 import { API_BASE_URL } from "../config/api";
@@ -16,6 +16,7 @@ function Chat() {
   const [previousChats, setPreviousChats] = useState([]);
   const messagesEndRef = useRef(null);
   const { user, login, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   // Debug current user state
   useEffect(() => {
