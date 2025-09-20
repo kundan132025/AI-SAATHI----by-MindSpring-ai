@@ -28,15 +28,38 @@ router.get(
         ? 'https://ai-saathi-by-mind-spring-ai-ancu.vercel.app' 
         : 'http://localhost:5173';
       
-      // Try callback route first, fallback to chat route
-      const callbackUrl = `${frontendUrl}/auth/callback?token=${token}`;
-      const fallbackUrl = `${frontendUrl}/chat?token=${token}`;
+      // Create a simple HTML page that handles the token and redirects
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Completing Login...</title>
+        </head>
+        <body>
+          <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial;">
+            <div style="text-align: center;">
+              <h2>Completing Login...</h2>
+              <p>Please wait while we complete your authentication.</p>
+            </div>
+          </div>
+          <script>
+            // Store token and redirect
+            localStorage.setItem('token', '${token}');
+            localStorage.setItem('user', JSON.stringify({
+              id: '${req.user._id}',
+              email: '${req.user.email}',
+              name: '${req.user.name}',
+              token: '${token}'
+            }));
+            setTimeout(() => {
+              window.location.href = '${frontendUrl}/chat';
+            }, 1000);
+          </script>
+        </body>
+        </html>
+      `;
       
-      console.log('🔗 Primary redirect to:', callbackUrl);
-      console.log('🔗 Fallback would be:', fallbackUrl);
-      
-      // For now, use direct chat redirect as it's more reliable
-      res.redirect(fallbackUrl);
+      res.send(html);
     } catch (error) {
       console.error('❌ OAuth callback error:', error);
       const frontendUrl = process.env.NODE_ENV === 'production' 

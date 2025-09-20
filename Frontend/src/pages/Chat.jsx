@@ -37,6 +37,24 @@ function Chat() {
     }
   }, [searchParams, navigate, login]);
 
+  // Check if user is logged in via localStorage on component mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    const storedToken = localStorage.getItem('token');
+    
+    if (storedUser && storedToken && !user) {
+      try {
+        const userData = JSON.parse(storedUser);
+        console.log('🔄 Restoring user from localStorage:', userData.email);
+        login(storedToken);
+      } catch (error) {
+        console.error('❌ Failed to restore user from localStorage:', error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
+    }
+  }, [user, login]);
+
   // Fetch previous chats for the user (simulate or fetch from backend)
   useEffect(() => {
     async function fetchChats() {
