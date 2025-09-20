@@ -3,7 +3,7 @@ import MessageBubble from "../components/MessageBubble/MessageBubble";
 import TypingIndicator from "../components/TypingIndicator";
 import { Menu, X } from "lucide-react";
 import Navbar2 from "../components/Navbar/Navbar2";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import axiosInstance from "../utils/axios";
 import { API_BASE_URL } from "../config/api";
@@ -17,6 +17,28 @@ function Chat() {
   const messagesEndRef = useRef(null);
   const { user, login, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Handle OAuth token from URL parameter
+  useEffect(() => {
+    const token = searchParams.get('token');
+    if (token) {
+      console.log('🔑 OAuth token received:', token);
+      // Store the token in localStorage and update user context
+      localStorage.setItem('token', token);
+      
+      // Use the login function from AuthContext to decode and store user
+      try {
+        login(token);
+        console.log('✅ User logged in successfully via OAuth');
+      } catch (error) {
+        console.error('❌ Failed to login with OAuth token:', error);
+      }
+      
+      // Remove token from URL for cleaner URL
+      navigate('/chat', { replace: true });
+    }
+  }, [searchParams, navigate, login]);
 
   // Fetch previous chats for the user (simulate or fetch from backend)
   useEffect(() => {
