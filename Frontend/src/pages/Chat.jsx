@@ -44,11 +44,12 @@ function Chat() {
     }
   }, [searchParams, navigate, login]);
 
-  // Check if user is logged in via localStorage on component mount
+  // Check if user is logged in via localStorage on component mount - ONLY ONCE
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
     
+    // Only restore if we don't already have a user and we have stored data
     if (storedUser && storedToken && !user) {
       try {
         const userData = JSON.parse(storedUser);
@@ -60,7 +61,7 @@ function Chat() {
         localStorage.removeItem('token');
       }
     }
-  }, [user, login]);
+  }, []); // Empty dependency array - only run once on mount
 
   // Fetch previous chats for the user (simulate or fetch from backend)
   useEffect(() => {

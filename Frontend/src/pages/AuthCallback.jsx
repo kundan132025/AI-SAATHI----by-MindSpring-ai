@@ -11,11 +11,24 @@ function AuthCallback() {
   useEffect(() => {
     console.log('🔄 AuthCallback: Processing OAuth callback...');
     
-    const token = searchParams.get('token');
-    const userDataParam = searchParams.get('user');
+    // Get URL params directly to avoid dependency issues
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const userDataParam = urlParams.get('user');
     
     console.log('🔑 AuthCallback: Token received:', token ? 'YES' : 'NO');
     console.log('👤 AuthCallback: User data received:', userDataParam ? 'YES' : 'NO');
+    
+    // Early exit if no token to prevent multiple runs
+    if (!token) {
+      console.error('❌ AuthCallback: No token found');
+      navigate('/login?error=no_oauth_data', { replace: true });
+      return;
+    }
+
+    // Clear URL parameters immediately to prevent re-runs
+    const urlWithoutParams = window.location.pathname;
+    window.history.replaceState({}, '', urlWithoutParams);
     
     if (token && userDataParam) {
       try {
@@ -60,11 +73,8 @@ function AuthCallback() {
         console.error('❌ AuthCallback: Token fallback failed:', error);
         navigate('/login?error=token_invalid', { replace: true });
       }
-    } else {
-      console.error('❌ AuthCallback: No token or user data found');
-      navigate('/login?error=no_oauth_data', { replace: true });
     }
-  }, [searchParams, navigate, login]);
+  }, [navigate, login]); // Only navigate and login as dependencies
 
   return (
     <div className="flex items-center justify-center min-h-screen">
