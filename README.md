@@ -53,6 +53,7 @@ AI Core: Google Gemini (@google/generative-ai SDK) for chat + emotion detection
 Database: MongoDB / Firebase (for journaling, analytics)
 
 
+```
 ai-saathi/
 │── backend/                 
 │   │── server.js
@@ -85,7 +86,7 @@ ai-saathi/
 │
 │── .gitignore
 │── README.md
-
+```
 
 
 Getting Started :-
