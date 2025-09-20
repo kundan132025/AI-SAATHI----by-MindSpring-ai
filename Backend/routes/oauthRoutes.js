@@ -43,17 +43,31 @@ router.get(
             </div>
           </div>
           <script>
-            // Store token and redirect
+            console.log('🔐 OAuth Callback: Storing user data...');
+            
+            // Store token
             localStorage.setItem('token', '${token}');
-            localStorage.setItem('user', JSON.stringify({
+            
+            // Store user data in the format expected by AuthContext
+            const userData = {
               id: '${req.user._id}',
+              _id: '${req.user._id}',
               email: '${req.user.email}',
               name: '${req.user.name}',
-              token: '${token}'
-            }));
+              token: '${token}',
+              provider: 'google'
+            };
+            
+            localStorage.setItem('user', JSON.stringify(userData));
+            
+            console.log('✅ OAuth Callback: Stored user:', userData);
+            console.log('✅ OAuth Callback: Stored token:', '${token}'.substring(0, 20) + '...');
+            
+            // Redirect after a short delay
             setTimeout(() => {
+              console.log('🔗 OAuth Callback: Redirecting to chat...');
               window.location.href = '${frontendUrl}/chat';
-            }, 1000);
+            }, 1500);
           </script>
         </body>
         </html>

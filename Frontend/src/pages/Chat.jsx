@@ -19,6 +19,13 @@ function Chat() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  // Debug current user state
+  useEffect(() => {
+    console.log('🎯 Chat Component: Current user state:', user);
+    console.log('🎯 Chat Component: localStorage user:', localStorage.getItem('user'));
+    console.log('🎯 Chat Component: localStorage token:', localStorage.getItem('token'));
+  }, [user]);
+
   // Handle OAuth token - BACKUP FALLBACK for direct /chat?token= URLs
   useEffect(() => {
     const token = searchParams.get('token');
