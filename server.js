@@ -317,8 +317,6 @@ const connectWithRetry = () => {
     retryReads: true,
     heartbeatFrequencyMS: 30000, // Heartbeat every 30 seconds
     maxIdleTimeMS: 300000, // Keep connections alive for 5 minutes
-    serverSelectionRetryDelayMS: 5000, // Retry delay
-    bufferMaxEntries: 0, // Disable buffering to fail fast
     bufferCommands: false, // Disable command buffering
   };
 
