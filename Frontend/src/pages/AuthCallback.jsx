@@ -1,97 +1,69 @@
-import { useEffect, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
 function AuthCallback() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
-  const hasProcessed = useRef(false); // Prevent multiple processing
 
   useEffect(() => {
-    // Prevent multiple executions
-    if (hasProcessed.current) {
-      console.log('🛑 AuthCallback: Already processed, skipping...');
-      return;
-    }
-    
-    console.log('🔄 AuthCallback: Processing OAuth callback...');
-    
-    // Get URL params directly to avoid dependency issues
+    // Get URL params immediately and only once
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     const userDataParam = urlParams.get('user');
     
-    console.log('🔑 AuthCallback: Token received:', token ? 'YES' : 'NO');
-    console.log('👤 AuthCallback: User data received:', userDataParam ? 'YES' : 'NO');
+    console.log('� AuthCallback: Starting OAuth processing...');
+    console.log('🔑 Token:', token ? 'Found' : 'Missing');
+    console.log('👤 User data:', userDataParam ? 'Found' : 'Missing');
     
-    // Early exit if no token to prevent multiple runs
+    // Clear URL immediately to prevent any re-processing
+    window.history.replaceState({}, '', '/auth/callback');
+    
     if (!token) {
-      console.error('❌ AuthCallback: No token found');
-      navigate('/login?error=no_oauth_data', { replace: true });
+      console.error('❌ No token found');
+      navigate('/login?error=no_token', { replace: true });
       return;
     }
 
-    // Mark as processed immediately
-    hasProcessed.current = true;
-
-    // Clear URL parameters immediately to prevent re-runs
-    const urlWithoutParams = window.location.pathname;
-    window.history.replaceState({}, '', urlWithoutParams);
-    
-    if (token && userDataParam) {
-      try {
-        // Parse user data
+    try {
+      if (userDataParam) {
+        // We have both token and user data
         const userData = JSON.parse(decodeURIComponent(userDataParam));
-        console.log('📋 AuthCallback: Parsed user data:', userData);
+        const userWithToken = { ...userData, token };
         
-        // Add token to user data
-        const userWithToken = {
-          ...userData,
-          token: token
-        };
-        
-        // Store in localStorage
+        // Store everything
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userWithToken));
         
-        console.log('💾 AuthCallback: Stored token in localStorage');
-        console.log('💾 AuthCallback: Stored user in localStorage:', userWithToken);
-        
-        // Update AuthContext
+        // Update context
         login(userWithToken);
-        console.log('✅ AuthCallback: Updated AuthContext with user');
         
-        // Redirect to chat page
-        console.log('🔗 AuthCallback: Redirecting to chat...');
-        navigate('/chat', { replace: true });
-        
-      } catch (error) {
-        console.error('❌ AuthCallback: Failed to process OAuth data:', error);
-        navigate('/login?error=oauth_processing_failed', { replace: true });
-      }
-    } else if (token) {
-      // Fallback: only token provided
-      try {
-        console.log('🔄 AuthCallback: Only token provided, using fallback...');
+        console.log('✅ OAuth complete with user data');
+      } else {
+        // Only token available
         localStorage.setItem('token', token);
         login(token);
-        console.log('✅ AuthCallback: Used token fallback');
-        navigate('/chat', { replace: true });
-      } catch (error) {
-        console.error('❌ AuthCallback: Token fallback failed:', error);
-        navigate('/login?error=token_invalid', { replace: true });
+        
+        console.log('✅ OAuth complete with token only');
       }
+      
+      // Redirect after a small delay
+      setTimeout(() => {
+        navigate('/chat', { replace: true });
+      }, 100);
+      
+    } catch (error) {
+      console.error('❌ OAuth processing failed:', error);
+      navigate('/login?error=oauth_failed', { replace: true });
     }
-  }, [navigate, login]); // Only navigate and login as dependencies
+  }, []); // NO dependencies to prevent any re-runs
 
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
         <p className="mt-4 text-lg text-gray-600">Completing authentication...</p>
-        <p className="mt-2 text-sm text-gray-500">Processing your login credentials...</p>
       </div>
     </div>
   );

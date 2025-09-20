@@ -1,76 +1,63 @@
-import { createContext, useState, useEffect, useContext, useRef } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
 import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const hasInitialized = useRef(false); // Prevent multiple initialization
 
-  // Restore user from localStorage on mount - ONLY ONCE
+  // Simple one-time localStorage check on mount
   useEffect(() => {
-    if (hasInitialized.current) {
-      console.log('🛑 AuthContext: Already initialized, skipping...');
-      return;
-    }
+    console.log('� AuthContext: Initial setup...');
     
-    console.log('🔄 AuthContext: Checking localStorage for user...');
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
-    
-    hasInitialized.current = true; // Mark as initialized immediately
     
     if (storedUser) {
       try {
         const userData = JSON.parse(storedUser);
-        console.log('✅ AuthContext: Restored user from localStorage:', userData);
+        console.log('✅ AuthContext: Restored user:', userData.email || userData.name);
         setUser(userData);
       } catch (error) {
-        console.error('❌ AuthContext: Failed to parse stored user:', error);
+        console.error('❌ AuthContext: Invalid stored user data');
         localStorage.removeItem("user");
         localStorage.removeItem("token");
       }
     } else if (storedToken) {
-      // Fallback: if we have token but no user data, try to decode
       try {
-        console.log('🔄 AuthContext: No user data, trying to decode token...');
         const decoded = jwtDecode(storedToken);
         const userObj = { ...decoded, token: storedToken };
         setUser(userObj);
         localStorage.setItem("user", JSON.stringify(userObj));
-        console.log('✅ AuthContext: Created user from token:', userObj);
+        console.log('✅ AuthContext: Created user from token');
       } catch (error) {
-        console.error('❌ AuthContext: Failed to decode token:', error);
+        console.error('❌ AuthContext: Invalid token');
         localStorage.removeItem("token");
       }
     } else {
-      console.log('ℹ️ AuthContext: No stored user or token found');
+      console.log('ℹ️ AuthContext: No stored credentials found');
     }
-  }, []);
+  }, []); // NO dependencies - run only once
 
   const login = (tokenOrUserData) => {
     try {
-      console.log('🔐 AuthContext: Login called with:', typeof tokenOrUserData);
+      console.log('🔐 AuthContext: Login called');
       
       let userObj;
       
       if (typeof tokenOrUserData === 'string') {
-        // It's a JWT token
-        console.log('🔑 AuthContext: Decoding JWT token...');
+        // JWT token
         const decoded = jwtDecode(tokenOrUserData);
         userObj = { ...decoded, token: tokenOrUserData };
       } else {
-        // It's already a user object
-        console.log('👤 AuthContext: Using provided user object...');
+        // User object
         userObj = tokenOrUserData;
       }
       
-      console.log('✅ AuthContext: Setting user:', userObj);
+      console.log('✅ AuthContext: Setting user:', userObj.email || userObj.name);
       setUser(userObj);
       localStorage.setItem("user", JSON.stringify(userObj));
       
-      // Also store token separately if it exists
       if (userObj.token) {
         localStorage.setItem("token", userObj.token);
       }
@@ -82,7 +69,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
-    // navigate("/login");
+    localStorage.removeItem("token");
   };
 
   return (

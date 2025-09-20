@@ -3,7 +3,7 @@ import MessageBubble from "../components/MessageBubble/MessageBubble";
 import TypingIndicator from "../components/TypingIndicator";
 import { Menu, X } from "lucide-react";
 import Navbar2 from "../components/Navbar/Navbar2";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import axiosInstance from "../utils/axios";
 import { API_BASE_URL } from "../config/api";
@@ -16,52 +16,11 @@ function Chat() {
   const [previousChats, setPreviousChats] = useState([]);
   const messagesEndRef = useRef(null);
   const { user, login, logout } = useContext(AuthContext);
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
   // Debug current user state
   useEffect(() => {
     console.log('🎯 Chat Component: Current user state:', user);
-    console.log('🎯 Chat Component: localStorage user:', localStorage.getItem('user'));
-    console.log('🎯 Chat Component: localStorage token:', localStorage.getItem('token'));
   }, [user]);
-
-  // Handle OAuth token - BACKUP FALLBACK for direct /chat?token= URLs
-  useEffect(() => {
-    const token = searchParams.get('token');
-    if (token) {
-      console.log('🔑 OAuth token received in Chat component (fallback):', token);
-      try {
-        localStorage.setItem('token', token);
-        login(token);
-        console.log('✅ User logged in successfully via OAuth fallback');
-        // Clean up URL
-        navigate('/chat', { replace: true });
-      } catch (error) {
-        console.error('❌ Failed to login with OAuth token:', error);
-        navigate('/login?error=oauth_failed', { replace: true });
-      }
-    }
-  }, [searchParams, navigate, login]);
-
-  // Check if user is logged in via localStorage on component mount - ONLY ONCE
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
-    
-    // Only restore if we don't already have a user and we have stored data
-    if (storedUser && storedToken && !user) {
-      try {
-        const userData = JSON.parse(storedUser);
-        console.log('🔄 Restoring user from localStorage:', userData.email);
-        login(storedToken);
-      } catch (error) {
-        console.error('❌ Failed to restore user from localStorage:', error);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-      }
-    }
-  }, []); // Empty dependency array - only run once on mount
 
   // Fetch previous chats for the user (simulate or fetch from backend)
   useEffect(() => {
