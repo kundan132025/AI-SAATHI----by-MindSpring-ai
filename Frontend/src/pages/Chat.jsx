@@ -165,7 +165,8 @@ function Chat() {
       <div className="flex w-screen bg-white min-h-screen">
         {/* Sidebar */}
         {sidebarOpen && (
-          <div className="fixed top-0 left-0 h-full w-64 bg-gray-900 text-white flex flex-col p-4 z-50 shadow-lg">
+          <div className="fixed top-0 left-0 h-full w-64 bg-gray-900 text-white flex flex-col p-4 shadow-lg"
+               style={{ zIndex: 9999 }}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-xl font-bold">Menu</span>
               <button
@@ -244,44 +245,43 @@ function Chat() {
 
                  {/* Dummy div for auto-scroll */}
                 <div ref={messagesEndRef} />
-            </div>
+              </div>
+              
               {/* Input Bar */}
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-3xl z-50 p-4 border-t bg-gray-100 rounded-full flex items-center gap-2 shadow-lg">
-            <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault(); // prevent newline
-                        handleSend();       // just call it ✅
-                    }
-                }}
-                placeholder="Ask Anything..."
-                rows={1}
-                className="flex-1 resize-none px-4 py-2 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-400 overflow-hidden"
-                style={{ minHeight: "40px", maxHeight: "150px" }}
+              <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-3xl z-50 p-4 border-t bg-gray-100 rounded-full flex items-center gap-2 shadow-lg">
+                <textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault(); // prevent newline
+                            handleSend();       // just call it ✅
+                        }
+                    }}
+                    placeholder="Ask Anything..."
+                    rows={1}
+                    className="flex-1 resize-none px-4 py-2 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-400 overflow-hidden"
+                    style={{ minHeight: "40px", maxHeight: "150px" }}
+                />
 
-            />
-
-            <button
-                onClick={handleSend}
-                className="px-4 py-2 bg-pink-500 text-white rounded-2xl hover:bg-pink-600"
-            >
-                Send
-            </button>
-          <button
-              onClick={toggleRecording}
-              className={`px-4 py-2 ${recording ? "bg-red-500" : "bg-blue-500"} text-white rounded-2xl hover:bg-blue-600`}
-            >
-            {recording ? "⏹️ Stop" : "🎤 Speak"}
-          </button>
-
-        </div>
+                <button
+                    onClick={handleSend}
+                    className="px-4 py-2 bg-pink-500 text-white rounded-2xl hover:bg-pink-600"
+                >
+                    Send
+                </button>
+                <button
+                    onClick={toggleRecording}
+                    className={`px-4 py-2 ${recording ? "bg-red-500" : "bg-blue-500"} text-white rounded-2xl hover:bg-blue-600`}
+                >
+                  {recording ? "⏹️ Stop" : "🎤 Speak"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
-        </div>
       </div>
+    </div>
   );
 }
 

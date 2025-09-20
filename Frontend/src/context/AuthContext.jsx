@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
 
   // Simple one-time localStorage check on mount
   useEffect(() => {
-    console.log('🔄 AuthContext: Initial setup - Loop Fix Version 2.0');
+    console.log('🔄 AuthContext: Initial setup - Loop Fix Version 2.2 (UI FIXES + FORCE DEPLOY)');
     
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
