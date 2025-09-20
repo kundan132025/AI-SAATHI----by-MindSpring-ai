@@ -72,9 +72,14 @@ app.use(
       mongoUrl: process.env.MONGO_URI,
       touchAfter: 24 * 3600, // lazy session update
       mongoOptions: {
-        serverSelectionTimeoutMS: 10000,
+        serverSelectionTimeoutMS: 30000,
         socketTimeoutMS: 45000,
-      }
+        connectTimeoutMS: 30000,
+        retryWrites: true,
+        retryReads: true,
+      },
+      // Fallback to memory store if MongoDB is unavailable
+      fallbackMemory: true,
     }),
     cookie: {
       secure: process.env.NODE_ENV === "production", // HTTPS in production
@@ -88,6 +93,30 @@ app.use(
 // Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Middleware to check database connection for routes that need it
+const checkDBConnection = (req, res, next) => {
+  const dbRequired = req.path.includes('/api/auth') || 
+                    req.path.includes('/api/stories') || 
+                    req.path.includes('/api/chat') ||
+                    req.path.includes('/api/checkin') ||
+                    req.path.includes('/api/dashboard') ||
+                    req.path.includes('/api/plan') ||
+                    req.path.includes('/api/report');
+  
+  if (dbRequired && mongoose.connection.readyState !== 1) {
+    console.log(`⚠️ Database required for ${req.path} but not connected`);
+    return res.status(503).json({ 
+      error: "Database temporarily unavailable", 
+      message: "Please try again in a moment",
+      retryAfter: 10 
+    });
+  }
+  
+  next();
+};
+
+app.use(checkDBConnection);
 
 
 app.use("/api/chat", chatRoutes);
@@ -132,6 +161,16 @@ app.get('/', (req, res) => {
     message: "AI Saathi Backend is running!",
     status: "healthy",
     timestamp: new Date().toISOString()
+  });
+});
+
+// Test endpoint that doesn't require database
+app.get('/api/test', (req, res) => {
+  res.json({
+    message: "API is working",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected"
   });
 });
 
@@ -184,20 +223,28 @@ const server = app.listen(PORT, () => {
 
 // Connect to MongoDB with timeout and retry logic
 const connectWithRetry = () => {
+  const mongoOptions = {
+    serverSelectionTimeoutMS: 30000, // 30 seconds timeout
+    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+    connectTimeoutMS: 30000, // 30 seconds to establish connection
+    bufferMaxEntries: 0, // Disable mongoose buffering
+    bufferCommands: false, // Disable mongoose buffering
+    maxPoolSize: 10, // Maintain up to 10 socket connections
+    retryWrites: true, // Retry writes on failure
+    retryReads: true, // Retry reads on failure
+  };
+
+  console.log('🔗 Attempting to connect to MongoDB...');
+  
   mongoose
-    .connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 10000, // 10 seconds timeout
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      bufferMaxEntries: 0, // Disable mongoose buffering
-      bufferCommands: false, // Disable mongoose buffering
-    })
+    .connect(process.env.MONGO_URI, mongoOptions)
     .then(() => {
       console.log("✅ MongoDB connected successfully");
     })
     .catch((err) => {
       console.error("❌ MongoDB connection error:", err.message);
-      console.log("🔄 Retrying MongoDB connection in 5 seconds...");
-      setTimeout(connectWithRetry, 5000);
+      console.log("🔄 Retrying MongoDB connection in 10 seconds...");
+      setTimeout(connectWithRetry, 10000);
     });
 };
 
