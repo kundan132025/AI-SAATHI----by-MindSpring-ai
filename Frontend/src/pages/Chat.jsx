@@ -77,18 +77,6 @@ function Chat() {
   }, [user]);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    if (token) {
-      login(token);
-      // Remove token from URL for cleanliness
-      window.history.replaceState({}, document.title, "/chat");
-      // Optionally, navigate to /chat to refresh the component
-      navigate("/chat", { replace: true });
-    }
-  }, [login, navigate]);
-
-  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
