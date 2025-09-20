@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useState, useEffect, useContext, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 
@@ -6,13 +6,20 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  // const navigate = useNavigate();
+  const hasInitialized = useRef(false); // Prevent multiple initialization
 
-  // Restore user from localStorage on mount
+  // Restore user from localStorage on mount - ONLY ONCE
   useEffect(() => {
+    if (hasInitialized.current) {
+      console.log('🛑 AuthContext: Already initialized, skipping...');
+      return;
+    }
+    
     console.log('🔄 AuthContext: Checking localStorage for user...');
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
+    
+    hasInitialized.current = true; // Mark as initialized immediately
     
     if (storedUser) {
       try {

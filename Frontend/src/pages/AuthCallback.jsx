@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
@@ -7,8 +7,15 @@ function AuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
+  const hasProcessed = useRef(false); // Prevent multiple processing
 
   useEffect(() => {
+    // Prevent multiple executions
+    if (hasProcessed.current) {
+      console.log('🛑 AuthCallback: Already processed, skipping...');
+      return;
+    }
+    
     console.log('🔄 AuthCallback: Processing OAuth callback...');
     
     // Get URL params directly to avoid dependency issues
@@ -25,6 +32,9 @@ function AuthCallback() {
       navigate('/login?error=no_oauth_data', { replace: true });
       return;
     }
+
+    // Mark as processed immediately
+    hasProcessed.current = true;
 
     // Clear URL parameters immediately to prevent re-runs
     const urlWithoutParams = window.location.pathname;

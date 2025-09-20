@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { useContext, Suspense } from "react";
 import { lazy } from "react";
-import { AuthProvider, AuthContext } from "./context/AuthContext";
+import { AuthContext } from "./context/AuthContext";
 
 // Lazy load page components for code splitting
 const Home = lazy(() => import("./pages/Home"));
