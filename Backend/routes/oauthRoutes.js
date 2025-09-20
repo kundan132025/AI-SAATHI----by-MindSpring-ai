@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 const router = express.Router();
 
 router.get("/google", (req, res, next) => {
-  console.log('🔍 Google OAuth initiated');
+  console.log('🔍 Google OAuth initiated - Version 2.0 (Loop Fixed)');
   passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
 });
 
@@ -43,7 +43,7 @@ router.get(
       
       const redirectUrl = `${frontendUrl}/auth/callback?token=${token}&user=${userData}`;
       
-      console.log('🔗 Redirecting to auth callback with token and user data');
+      console.log('🔗 Redirecting to auth callback with token and user data - Loop Fix Applied');
       res.redirect(redirectUrl);
     } catch (error) {
       console.error('❌ OAuth callback error:', error);

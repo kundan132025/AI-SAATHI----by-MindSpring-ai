@@ -1,4 +1,9 @@
-import { createContext, useState, useEffect, useContext } from "react";
+import {  // Simple one-time localStorage check on mount
+  useEffect(() => {
+    console.log('🔄 AuthContext: Initial setup - Loop Fix Version 2.0');
+    
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");eContext, useState, useEffect, useContext } from "react";
 import { jwtDecode } from "jwt-decode";
 
 export const AuthContext = createContext();
