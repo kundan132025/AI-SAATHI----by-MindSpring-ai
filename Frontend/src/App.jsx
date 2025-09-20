@@ -11,6 +11,7 @@ const Register = lazy(() => import("./pages/Register"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Stories = lazy(() => import("./pages/Stories"));
 const DailyCheckinForm = lazy(() => import("./components/DailyCheckinForm"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 
 // Loading fallback component
 const LoadingSpinner = () => (
@@ -29,6 +30,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard userId={user?.id || user?._id} />} />

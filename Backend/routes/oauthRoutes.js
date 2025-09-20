@@ -28,8 +28,8 @@ router.get(
         ? 'https://ai-saathi-by-mind-spring-ai-ancu.vercel.app' 
         : 'http://localhost:5173';
       
-      console.log('🔗 Redirecting to:', `${frontendUrl}/chat?token=${token}`);
-      res.redirect(`${frontendUrl}/chat?token=${token}`);
+      console.log('🔗 Redirecting to:', `${frontendUrl}/auth/callback?token=${token}`);
+      res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
     } catch (error) {
       console.error('❌ OAuth callback error:', error);
       res.redirect('/login?error=oauth_failed');
