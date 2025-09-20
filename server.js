@@ -149,6 +149,9 @@ app.get('/api/health', (req, res) => {
     3: 'disconnecting'
   };
   
+  const memoryUsage = process.memoryUsage();
+  const cpuUsage = process.cpuUsage();
+  
   res.status(200).json({
     status: "healthy",
     server: "running",
@@ -156,8 +159,19 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     port: process.env.PORT || 5000,
-    uptime: process.uptime(),
-    memory: process.memoryUsage()
+    uptime: Math.floor(process.uptime()),
+    uptimeHuman: `${Math.floor(process.uptime() / 3600)}h ${Math.floor((process.uptime() % 3600) / 60)}m ${Math.floor(process.uptime() % 60)}s`,
+    memory: {
+      used: Math.round(memoryUsage.heapUsed / 1024 / 1024),
+      total: Math.round(memoryUsage.heapTotal / 1024 / 1024),
+      external: Math.round(memoryUsage.external / 1024 / 1024),
+      rss: Math.round(memoryUsage.rss / 1024 / 1024)
+    },
+    connections: {
+      mongodb: mongoose.connections.length,
+      active: mongoose.connection.readyState === 1
+    },
+    ping: "pong"
   });
 });
 
@@ -178,6 +192,35 @@ app.get('/api/test', (req, res) => {
     environment: process.env.NODE_ENV,
     database: mongoose.connection.readyState === 1 ? "connected" : "disconnected"
   });
+});
+
+// Keep-alive endpoint for external ping services
+app.get('/api/ping', (req, res) => {
+  res.status(200).json({
+    status: "alive",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// Warmup endpoint to initialize connections
+app.get('/api/warmup', async (req, res) => {
+  try {
+    // Test database connection
+    const dbTest = mongoose.connection.readyState === 1;
+    
+    res.status(200).json({
+      status: "warmed",
+      database: dbTest ? "ready" : "warming",
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "warming",
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Debug endpoint to check OAuth configuration
@@ -227,6 +270,28 @@ const server = app.listen(PORT, () => {
   console.log(`🌐 CORS enabled for: ${allowedOrigins.join(', ')}`);
 });
 
+// Configure server to prevent disconnections
+server.keepAliveTimeout = 120000; // 2 minutes
+server.headersTimeout = 120000; // 2 minutes
+server.timeout = 120000; // 2 minutes
+
+// Self-ping system to prevent server from sleeping (Render free tier issue)
+const selfPing = () => {
+  if (process.env.NODE_ENV === 'production') {
+    setInterval(async () => {
+      try {
+        const response = await fetch('https://ai-saathi-backend.onrender.com/api/health');
+        console.log(`🏓 Self-ping successful: ${response.status}`);
+      } catch (error) {
+        console.error('❌ Self-ping failed:', error.message);
+      }
+    }, 14 * 60 * 1000); // Ping every 14 minutes to prevent 15-min sleep
+  }
+};
+
+// Start self-ping after 1 minute
+setTimeout(selfPing, 60000);
+
 // Connect to MongoDB with timeout and retry logic
 const connectWithRetry = () => {
   const mongoOptions = {
@@ -236,6 +301,11 @@ const connectWithRetry = () => {
     maxPoolSize: 50, // Maintain up to 50 socket connections
     retryWrites: true,
     retryReads: true,
+    heartbeatFrequencyMS: 30000, // Heartbeat every 30 seconds
+    maxIdleTimeMS: 300000, // Keep connections alive for 5 minutes
+    serverSelectionRetryDelayMS: 5000, // Retry delay
+    bufferMaxEntries: 0, // Disable buffering to fail fast
+    bufferCommands: false, // Disable command buffering
   };
 
   console.log('🔗 Attempting to connect to MongoDB...');
@@ -269,14 +339,21 @@ mongoose.connection.on('connected', () => {
 
 mongoose.connection.on('disconnected', () => {
   console.log('📴 MongoDB disconnected. Attempting to reconnect...');
+  setTimeout(connectWithRetry, 2000); // Quick reconnect attempt
 });
 
 mongoose.connection.on('error', (err) => {
   console.error('🔴 MongoDB error:', err);
+  setTimeout(connectWithRetry, 5000); // Reconnect on error
 });
 
 mongoose.connection.on('reconnected', () => {
   console.log('🔄 MongoDB reconnected successfully');
+});
+
+mongoose.connection.on('close', () => {
+  console.log('📴 MongoDB connection closed');
+  setTimeout(connectWithRetry, 2000); // Quick reconnect attempt
 });
 
 // Graceful shutdown
@@ -284,6 +361,29 @@ process.on('SIGTERM', () => {
   console.log('📤 SIGTERM received');
   server.close(() => {
     console.log('🔄 Process terminated');
+    mongoose.connection.close(false, () => {
+      console.log('📴 MongoDB connection closed');
+      process.exit(0);
+    });
+  });
+});
+
+// Handle uncaught exceptions to prevent crashes
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+  // Don't exit, just log and continue
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit, just log and continue
+});
+
+// Keep process alive
+process.on('SIGINT', () => {
+  console.log('📤 SIGINT received, gracefully shutting down...');
+  server.close(() => {
     mongoose.connection.close(false, () => {
       console.log('📴 MongoDB connection closed');
       process.exit(0);

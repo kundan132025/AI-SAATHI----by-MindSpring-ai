@@ -108,6 +108,12 @@ function Chat() {
 
 
   try {
+    console.log("🚀 Sending message to chat API:", userMessage);
+    
+    // Add timeout to fetch requests
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
     const response = await fetch(`${API_BASE_URL}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -115,21 +121,18 @@ function Chat() {
         userId: user?.id || user?._id, 
         message: userMessage 
       }),
+      signal: controller.signal,
     });
 
-    const response_data = await fetch(`${API_BASE_URL}/api/chat/analyze`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        userId:  user?.id || user?._id, 
-        message: userMessage 
-      }),
-    });
-
+    clearTimeout(timeoutId);
     console.log("Response status:", response.status);
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
-    console.log("Response JSON:", data);
+    console.log("✅ Response JSON:", data);
 
     if (data.reply) {
       setMessages((prev) => [...prev, { sender: "ai", text: data.reply }]);
@@ -137,9 +140,34 @@ function Chat() {
     } else {
       setMessages((prev) => [...prev, { sender: "ai", text: "⚠️ No reply from AI." }]);
     }
+    
+    // Optional: Also send to analyze endpoint (but don't block if it fails)
+    try {
+      const analyzeController = new AbortController();
+      const analyzeTimeoutId = setTimeout(() => analyzeController.abort(), 10000);
+      
+      await fetch(`${API_BASE_URL}/api/chat/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          userId: user?.id || user?._id, 
+          message: userMessage 
+        }),
+        signal: analyzeController.signal,
+      });
+      
+      clearTimeout(analyzeTimeoutId);
+    } catch (analyzeErr) {
+      console.warn("Analyze endpoint failed (non-critical):", analyzeErr);
+    }
+    
   } catch (err) {
-    console.error("Fetch error:", err);
-    setMessages((prev) => [...prev, { sender: "ai", text: "⚠️ Error connecting to server." }]);
+    console.error("❌ Fetch error:", err);
+    if (err.name === 'AbortError') {
+      setMessages((prev) => [...prev, { sender: "ai", text: "⚠️ Request timed out. Please try again." }]);
+    } else {
+      setMessages((prev) => [...prev, { sender: "ai", text: "⚠️ Error connecting to server. Please check your connection." }]);
+    }
   } finally {
     setLoading(false);
   }

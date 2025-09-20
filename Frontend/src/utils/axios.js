@@ -5,13 +5,14 @@ const getBaseURL = () => {
   const isProduction = import.meta.env.PROD;
   const envUrl = import.meta.env.VITE_API_URL;
   const defaultProdUrl = 'https://ai-saathi-backend.onrender.com';
-  const devUrl = 'http://localhost:5000';
+  const devUrl = 'https://ai-saathi-backend.onrender.com'; // Use Render backend even in dev
   
   let baseURL;
   if (isProduction) {
     baseURL = envUrl || defaultProdUrl;
   } else {
-    baseURL = devUrl;
+    // For local development, use Render backend instead of localhost
+    baseURL = envUrl || devUrl;
   }
   
   console.log('🌍 Environment:', isProduction ? 'Production' : 'Development');
@@ -24,7 +25,10 @@ const getBaseURL = () => {
 const axiosInstance = axios.create({
   baseURL: getBaseURL(),
   withCredentials: true,
-  timeout: 10000, // 10 second timeout
+  timeout: 30000, // 30 second timeout for Render backend
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 // Add request interceptor for debugging
