@@ -71,11 +71,16 @@ app.use(
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URI,
       touchAfter: 24 * 3600, // lazy session update
+      mongoOptions: {
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+      }
     }),
     cookie: {
       secure: process.env.NODE_ENV === "production", // HTTPS in production
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax', // Allow cross-site cookies in production
     },
   })
 );
@@ -138,7 +143,11 @@ app.get('/api/debug/oauth', (req, res) => {
       ? "https://ai-saathi-backend.onrender.com/api/auth/google/callback"
       : "http://localhost:5000/api/auth/google/callback",
     googleClientId: process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET',
-    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET'
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET',
+    jwtSecret: process.env.JWT_SECRET ? 'SET' : 'NOT SET',
+    mongoUri: process.env.MONGO_URI ? 'SET' : 'NOT SET',
+    sessionId: req.sessionID,
+    user: req.user || 'No user in session'
   });
 });
 

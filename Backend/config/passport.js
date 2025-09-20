@@ -18,18 +18,28 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        console.log('🔍 Processing Google OAuth profile:', profile.emails?.[0]?.value);
+        
+        if (!profile.emails || !profile.emails[0]) {
+          return done(new Error('No email found in Google profile'), null);
+        }
+
         let user = await User.findOne({ email: profile.emails[0].value });
 
         if (!user) {
+          console.log('👤 Creating new user:', profile.emails[0].value);
           user = await User.create({
             name: profile.displayName,
             email: profile.emails[0].value,
             provider: "google",
           });
+        } else {
+          console.log('👤 Found existing user:', user.email);
         }
 
         return done(null, user);
       } catch (err) {
+        console.error('❌ Passport strategy error:', err);
         return done(err, null);
       }
     }
@@ -37,9 +47,21 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
+  console.log('🔐 Serializing user:', user.id);
   done(null, user.id);
 });
+
 passport.deserializeUser(async (id, done) => {
-  const user = await User.findById(id);
-  done(null, user);
+  try {
+    console.log('🔓 Deserializing user:', id);
+    const user = await User.findById(id);
+    if (!user) {
+      console.log('❌ User not found during deserialization:', id);
+      return done(null, false);
+    }
+    done(null, user);
+  } catch (err) {
+    console.error('❌ Deserialization error:', err);
+    done(err, null);
+  }
 });

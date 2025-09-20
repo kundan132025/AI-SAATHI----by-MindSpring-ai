@@ -13,6 +13,9 @@ router.get(
   "/google/callback",
   (req, res, next) => {
     console.log('🔄 Google OAuth callback received');
+    console.log('📋 Session ID:', req.sessionID);
+    console.log('📋 Query params:', req.query);
+    
     passport.authenticate("google", { 
       failureRedirect: "/login",
       failureMessage: true 
@@ -20,7 +23,21 @@ router.get(
   },
   (req, res) => {
     try {
+      if (!req.user) {
+        console.error('❌ No user found in request after OAuth');
+        const frontendUrl = process.env.NODE_ENV === 'production' 
+          ? 'https://ai-saathi-by-mind-spring-ai-ancu.vercel.app' 
+          : 'http://localhost:5173';
+        return res.redirect(`${frontendUrl}/login?error=no_user`);
+      }
+
       console.log('✅ Google OAuth successful, user:', req.user?.email);
+      
+      if (!process.env.JWT_SECRET) {
+        console.error('❌ JWT_SECRET not found');
+        throw new Error('JWT_SECRET not configured');
+      }
+
       const token = jwt.sign({ 
         id: req.user._id,
         email: req.user.email,
@@ -50,7 +67,7 @@ router.get(
       const frontendUrl = process.env.NODE_ENV === 'production' 
         ? 'https://ai-saathi-by-mind-spring-ai-ancu.vercel.app' 
         : 'http://localhost:5173';
-      res.redirect(`${frontendUrl}/login?error=oauth_failed`);
+      res.redirect(`${frontendUrl}/login?error=oauth_failed&message=${encodeURIComponent(error.message)}`);
     }
   }
 );
