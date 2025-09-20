@@ -131,16 +131,24 @@ app.use("/api", ttsRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", oauthRoutes);
 app.get('/' , (req,res)=>{
+  console.log('🏠 Root endpoint accessed from:', req.ip || req.connection.remoteAddress);
   res.json({
     message: "AI Saathi Backend API is running!",
     status: "healthy",
     timestamp: new Date().toISOString(),
-    version: "1.0.0"
+    version: "1.2.0",
+    endpoints: {
+      health: "/api/health",
+      test: "/api/test",
+      ping: "/api/ping"
+    }
   });
 });
 
-// Health check endpoint
+// Health check endpoint with comprehensive diagnostics
 app.get('/api/health', (req, res) => {
+  console.log('🏥 Health check requested from:', req.ip || req.connection.remoteAddress);
+  
   const dbStatus = mongoose.connection.readyState;
   const dbStatusMap = {
     0: 'disconnected',
@@ -152,7 +160,7 @@ app.get('/api/health', (req, res) => {
   const memoryUsage = process.memoryUsage();
   const cpuUsage = process.cpuUsage();
   
-  res.status(200).json({
+  const healthData = {
     status: "healthy",
     server: "running",
     database: dbStatusMap[dbStatus] || 'unknown',
@@ -169,10 +177,16 @@ app.get('/api/health', (req, res) => {
     },
     connections: {
       mongodb: mongoose.connections.length,
-      active: mongoose.connection.readyState === 1
+      active: mongoose.connection.readyState === 1,
+      dbState: dbStatus
     },
-    ping: "pong"
-  });
+    ping: "pong",
+    version: "1.2.0",
+    nodeVersion: process.version
+  };
+  
+  console.log('✅ Health check response sent:', healthData.status);
+  res.status(200).json(healthData);
 });
 
 // Simple root endpoint for basic health check

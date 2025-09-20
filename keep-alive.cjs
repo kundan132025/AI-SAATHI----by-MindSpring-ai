@@ -1,7 +1,5 @@
 // Keep-alive service to prevent server from sleeping
-// This service pings the server every 14 minutes to prevent Render free tier sleep
-
-const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes in milliseconds
+const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes
 const SERVER_URL = 'https://ai-saathi-backend.onrender.com';
 
 class KeepAliveService {
@@ -18,12 +16,14 @@ class KeepAliveService {
       const startTime = Date.now();
       console.log(`🏓 Keep-alive ping #${this.pingCount + 1} starting...`);
       
+      const { default: fetch } = await import('node-fetch');
       const response = await fetch(`${SERVER_URL}/api/ping`, {
         method: 'GET',
         headers: {
           'User-Agent': 'KeepAlive-Service/1.0',
           'Cache-Control': 'no-cache'
-        }
+        },
+        timeout: 30000
       });
 
       const responseTime = Date.now() - startTime;
@@ -33,7 +33,6 @@ class KeepAliveService {
         this.lastPingTime = new Date();
         console.log(`✅ Keep-alive ping successful (${responseTime}ms) - Total pings: ${this.pingCount}`);
         
-        // Clear old errors on successful ping
         if (this.errors.length > 0) {
           console.log(`🧹 Clearing ${this.errors.length} previous errors`);
           this.errors = [];
@@ -49,73 +48,54 @@ class KeepAliveService {
       
       console.error(`❌ Keep-alive ping failed:`, error.message);
       
-      // Keep only last 5 errors
       if (this.errors.length > 5) {
         this.errors = this.errors.slice(-5);
+      }
+      
+      // Try health endpoint as fallback
+      try {
+        const { default: fetch } = await import('node-fetch');
+        const healthResponse = await fetch(`${SERVER_URL}/api/health`, { timeout: 30000 });
+        if (healthResponse.ok) {
+          console.log('🏥 Health endpoint reachable, server is alive');
+        }
+      } catch (healthError) {
+        console.error('💔 Health endpoint also failed:', healthError.message);
       }
     }
   }
 
   start() {
-    if (this.isRunning) {
-      console.log('⚠️ Keep-alive service is already running');
-      return;
-    }
+    if (this.isRunning) return;
 
     console.log(`🚀 Starting keep-alive service (ping every ${PING_INTERVAL / 1000 / 60} minutes)`);
     console.log(`🎯 Target server: ${SERVER_URL}`);
     
     this.isRunning = true;
-    
-    // First ping immediately
     this.ping();
     
-    // Then ping at intervals
     this.intervalId = setInterval(() => {
       this.ping();
     }, PING_INTERVAL);
   }
 
   stop() {
-    if (!this.isRunning) {
-      console.log('⚠️ Keep-alive service is not running');
-      return;
-    }
-
+    if (!this.isRunning) return;
     console.log('🛑 Stopping keep-alive service');
     this.isRunning = false;
-    
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
   }
-
-  getStatus() {
-    return {
-      isRunning: this.isRunning,
-      pingCount: this.pingCount,
-      lastPingTime: this.lastPingTime,
-      totalErrors: this.errors.length,
-      recentErrors: this.errors.slice(-3),
-      nextPingIn: this.isRunning ? Math.ceil((PING_INTERVAL - (Date.now() - (this.lastPingTime?.getTime() || Date.now()))) / 1000) : null
-    };
-  }
 }
 
-// Auto-start if running directly
+// Auto-start
 const keepAlive = new KeepAliveService();
 keepAlive.start();
 
-// Graceful shutdown
 process.on('SIGINT', () => {
-  console.log('\n📤 Received SIGINT, shutting down keep-alive service...');
-  keepAlive.stop();
-  process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  console.log('\n📤 Received SIGTERM, shutting down keep-alive service...');
+  console.log('\n📤 Shutting down keep-alive service...');
   keepAlive.stop();
   process.exit(0);
 });
