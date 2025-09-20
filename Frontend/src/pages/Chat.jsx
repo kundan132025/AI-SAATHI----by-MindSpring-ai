@@ -15,6 +15,7 @@ function Chat() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [previousChats, setPreviousChats] = useState([]);
   const messagesEndRef = useRef(null);
+  const textareaRef = useRef(null);
   const { user, login, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -37,9 +38,22 @@ function Chat() {
     fetchChats();
   }, [user]);
 
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const scrollToBottom = () => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ 
+          behavior: "smooth",
+          block: "end",
+          inline: "nearest"
+        });
+      }
+    };
+    
+    // Small delay to ensure DOM is updated
+    const timeoutId = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timeoutId);
+  }, [messages, loading]);
 
 
   const playVoice = async (text) => {
@@ -63,35 +77,35 @@ function Chat() {
     console.error("TTS Play Error:", err);
     
     // Fallback to browser's built-in speech synthesis
-    try {
-      if ('speechSynthesis' in window) {
-        // Cancel any ongoing speech
-        window.speechSynthesis.cancel();
+    // try {
+    //   if ('speechSynthesis' in window) {
+    //     // Cancel any ongoing speech
+    //     window.speechSynthesis.cancel();
         
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.8;
-        utterance.pitch = 1.1;
-        utterance.volume = 0.8;
+    //     const utterance = new SpeechSynthesisUtterance(text);
+    //     utterance.rate = 0.8;
+    //     utterance.pitch = 1.1;
+    //     utterance.volume = 0.8;
         
-        // Try to find a female voice
-        const voices = window.speechSynthesis.getVoices();
-        const femaleVoice = voices.find(voice => 
-          voice.name.toLowerCase().includes('female') || 
-          voice.name.toLowerCase().includes('zira') ||
-          voice.name.toLowerCase().includes('susan')
-        );
+    //     // Try to find a female voice
+    //     const voices = window.speechSynthesis.getVoices();
+    //     const femaleVoice = voices.find(voice => 
+    //       voice.name.toLowerCase().includes('female') || 
+    //       voice.name.toLowerCase().includes('zira') ||
+    //       voice.name.toLowerCase().includes('susan')
+    //     );
         
-        if (femaleVoice) {
-          utterance.voice = femaleVoice;
-        }
+    //     if (femaleVoice) {
+    //       utterance.voice = femaleVoice;
+    //     }
         
-        window.speechSynthesis.speak(utterance);
-      } else {
-        console.warn('Speech synthesis not supported in this browser');
-      }
-    } catch (fallbackErr) {
-      console.error("Fallback TTS Error:", fallbackErr);
-    }
+    //     window.speechSynthesis.speak(utterance);
+    //   } else {
+    //     console.warn('Speech synthesis not supported in this browser');
+    //   }
+    // } catch (fallbackErr) {
+    //   console.error("Fallback TTS Error:", fallbackErr);
+    // }
   }
 };
 
@@ -103,6 +117,12 @@ function Chat() {
   setMessages((prev) => [...prev, { sender: "user", text: input }]);
   const userMessage = input;  // save before clearing
   setInput("");
+  
+  // Reset textarea height
+  if (textareaRef.current) {
+    textareaRef.current.style.height = '48px';
+  }
+  
   setLoading(true);
 
 
@@ -294,52 +314,69 @@ function Chat() {
         )}
 
         {/* Main chat area */}
-        <div className="flex flex-col flex-1">
-          {/* Sidebar open button */}
-          {/* Chat container */}
-          <div className="flex-1 flex flex-col justify-end items-center bg-[#e6e6fa] pt-20">
-            <div className="w-full max-w-3xl flex flex-col flex-1">
-              {/* Messages */}
-              <div className="flex-1 p-4 overflow-y-auto">
-                {messages.map((msg, i) => (
-                  <MessageBubble key={i} sender={msg.sender} text={msg.text} />
-                ))}
-
-                {loading && <TypingIndicator />}
-
-                 {/* Dummy div for auto-scroll */}
-                <div ref={messagesEndRef} />
+        <div className="flex flex-col flex-1 h-screen">
+          {/* Chat container with proper height and scrolling */}
+          <div className="flex-1 flex flex-col h-full bg-[#e6e6fa] pt-20">
+            <div className="flex-1 flex flex-col h-full max-w-4xl mx-auto w-full">
+              {/* Messages container with proper scrolling */}
+              <div className="flex-1 overflow-y-auto px-4 pb-32" style={{ maxHeight: 'calc(100vh - 140px)' }}>
+                <div className="space-y-4 py-4">
+                  {messages.map((msg, i) => (
+                    <MessageBubble key={i} sender={msg.sender} text={msg.text} />
+                  ))}
+                  
+                  {loading && <TypingIndicator />}
+                  
+                  {/* Auto-scroll target */}
+                  <div ref={messagesEndRef} />
+                </div>
               </div>
               
-              {/* Input Bar */}
-              <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-3xl z-50 p-4 border-t bg-gray-100 rounded-full flex items-center gap-2 shadow-lg">
-                <textarea
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault(); // prevent newline
-                            handleSend();       // just call it ✅
-                        }
-                    }}
-                    placeholder="Ask Anything..."
-                    rows={1}
-                    className="flex-1 resize-none px-4 py-2 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-400 overflow-hidden"
-                    style={{ minHeight: "40px", maxHeight: "150px" }}
-                />
+              {/* Fixed Input Bar at bottom */}
+              <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-50">
+                <div className="max-w-4xl mx-auto">
+                  <div className="flex items-end gap-3 bg-gray-100 rounded-2xl p-3 shadow-lg">
+                    <textarea
+                        ref={textareaRef}
+                        value={input}
+                        onChange={(e) => {
+                          setInput(e.target.value);
+                          // Auto-resize textarea
+                          e.target.style.height = 'auto';
+                          e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSend();
+                            }
+                        }}
+                        placeholder="Ask Anything..."
+                        rows={1}
+                        className="flex-1 resize-none px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white transition-all duration-200"
+                        style={{ 
+                          minHeight: "48px", 
+                          maxHeight: "120px",
+                          overflow: "hidden"
+                        }}
+                    />
 
-                <button
-                    onClick={handleSend}
-                    className="px-4 py-2 bg-pink-500 text-white rounded-2xl hover:bg-pink-600"
-                >
-                    Send
-                </button>
-                <button
-                    onClick={toggleRecording}
-                    className={`px-4 py-2 ${recording ? "bg-red-500" : "bg-blue-500"} text-white rounded-2xl hover:bg-blue-600`}
-                >
-                  {recording ? "⏹️ Stop" : "🎤 Speak"}
-                </button>
+                    <button
+                        onClick={handleSend}
+                        disabled={!input.trim() || loading}
+                        className="px-6 py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-semibold"
+                    >
+                        Send
+                    </button>
+                    
+                    <button
+                        onClick={toggleRecording}
+                        className={`px-4 py-3 ${recording ? "bg-red-500 hover:bg-red-600" : "bg-blue-500 hover:bg-blue-600"} text-white rounded-xl transition-colors`}
+                    >
+                      {recording ? "⏹️" : "🎤"}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
