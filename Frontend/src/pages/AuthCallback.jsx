@@ -9,26 +9,60 @@ function AuthCallback() {
   const { login } = useContext(AuthContext);
 
   useEffect(() => {
-    const token = searchParams.get('token');
+    console.log('🔄 AuthCallback: Processing OAuth callback...');
     
-    if (token) {
-      console.log('🔑 Processing OAuth token...');
-      
+    const token = searchParams.get('token');
+    const userDataParam = searchParams.get('user');
+    
+    console.log('🔑 AuthCallback: Token received:', token ? 'YES' : 'NO');
+    console.log('👤 AuthCallback: User data received:', userDataParam ? 'YES' : 'NO');
+    
+    if (token && userDataParam) {
       try {
-        // Store token and login user
+        // Parse user data
+        const userData = JSON.parse(decodeURIComponent(userDataParam));
+        console.log('📋 AuthCallback: Parsed user data:', userData);
+        
+        // Add token to user data
+        const userWithToken = {
+          ...userData,
+          token: token
+        };
+        
+        // Store in localStorage
         localStorage.setItem('token', token);
-        login(token);
-        console.log('✅ OAuth login successful');
+        localStorage.setItem('user', JSON.stringify(userWithToken));
+        
+        console.log('💾 AuthCallback: Stored token in localStorage');
+        console.log('💾 AuthCallback: Stored user in localStorage:', userWithToken);
+        
+        // Update AuthContext
+        login(userWithToken);
+        console.log('✅ AuthCallback: Updated AuthContext with user');
         
         // Redirect to chat page
+        console.log('🔗 AuthCallback: Redirecting to chat...');
+        navigate('/chat', { replace: true });
+        
+      } catch (error) {
+        console.error('❌ AuthCallback: Failed to process OAuth data:', error);
+        navigate('/login?error=oauth_processing_failed', { replace: true });
+      }
+    } else if (token) {
+      // Fallback: only token provided
+      try {
+        console.log('🔄 AuthCallback: Only token provided, using fallback...');
+        localStorage.setItem('token', token);
+        login(token);
+        console.log('✅ AuthCallback: Used token fallback');
         navigate('/chat', { replace: true });
       } catch (error) {
-        console.error('❌ OAuth login failed:', error);
-        navigate('/login?error=oauth_failed', { replace: true });
+        console.error('❌ AuthCallback: Token fallback failed:', error);
+        navigate('/login?error=token_invalid', { replace: true });
       }
     } else {
-      console.error('❌ No token found in callback');
-      navigate('/login?error=no_token', { replace: true });
+      console.error('❌ AuthCallback: No token or user data found');
+      navigate('/login?error=no_oauth_data', { replace: true });
     }
   }, [searchParams, navigate, login]);
 
@@ -37,6 +71,7 @@ function AuthCallback() {
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
         <p className="mt-4 text-lg text-gray-600">Completing authentication...</p>
+        <p className="mt-2 text-sm text-gray-500">Processing your login credentials...</p>
       </div>
     </div>
   );
